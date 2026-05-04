@@ -1,0 +1,870 @@
+---
+title: "__Topic 8 - Functions in R__"
+author: "Esam Mahdi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+# Introduction to Functions
+
+**Functions** solve this problem by allowing you to:
+
+  - **Encapsulate** reusable code into a single named unit
+
+  - **Avoid repetition** (Don't Repeat Yourself)
+
+  - **Organize** complex code into manageable pieces
+
+  - **Share** your code with others
+
+**What is a Function?**
+
+A **function** is a named block of code that:
+
+  - Takes **inputs** (called arguments or parameters)
+
+  - Performs a specific **task**
+
+  - Returns an **output** (result)
+
+Think of a function like a **recipe**:
+
+  - **Ingredients** = arguments you provide
+
+  - **Instructions** = code inside the function
+
+  - **Dish** = the returned result
+
+# Built-in Functions We've Used
+
+**R** comes with hundreds of built-in functions:
+
+```{r}
+# Examples of built-in functions
+sum(c(1, 2, 3, 4, 5))      # Returns 15
+mean(c(10, 20, 30, 40))     # Returns 25
+sqrt(16)                    # Returns 4
+round(3.14159, digits = 2)  # Returns 3.14
+```
+
+## Getting Help with Functions
+
+Before we start creating our own functions, it's important to know how to get help with existing functions. **R** has a built-in help system that provides documentation for all functions in base **R** and installed packages.
+
+** The `?` Operator and `help()` Function**
+
+You can access documentation for any function using either:
+
+- `?function_name`
+- `help(function_name)`
+
+**Example: Understanding `rnorm()`**
+
+Let's explore the `rnorm()` function, which generates random numbers from a **normal distribution** (bell curve):
+
+```{r help-example, eval=FALSE}
+# View documentation for rnorm
+?rnorm
+# or
+help(rnorm)
+```
+
+**What does `rnorm()` do?**
+
+  - Generates random numbers following a normal (Gaussian) distribution
+
+  - Commonly used for simulation, statistical modeling, and creating test data
+
+**Arguments of `rnorm()`:**
+
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `n` | Number of random values to generate | Required (no default) |
+| `mean` | Mean (center) of the distribution | 0 |
+| `sd` | Standard deviation (spread) of the distribution | 1 |
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# Generate normal curve
+x <- seq(-4, 4, length.out = 200)
+y <- dnorm(x, mean = 0, sd = 1)
+
+plot(x, y, type = "l", lwd = 2, col = "darkblue",
+     xlab = "Value", ylab = "Density",
+     main = "Standard Normal Distribution (Mean = 0, SD = 1)",
+     axes = TRUE)
+grid(col = "lightgray", lty = 3)
+abline(v = 0, col = "red", lty = 2, lwd = 1.5)
+```
+
+**Examples of using `rnorm()` to generate random numbers:**
+
+```{r rnorm-example, eval=FALSE}
+# Generate 5 random numbers from a standard normal distribution
+# Standard normal has mean = 0 and standard deviation = 1
+rnorm(5) # Uses default mean=0 and sd=1
+
+# Generate 5 random numbers from a normal distribution with:
+#   mean = 100
+#   standard deviation = 4 (variance = 16)
+rnorm(5, mean = 100, sd = 4)
+
+# Named arguments allow you to change the order
+# This produces the SAME result as the previous example
+rnorm(5, sd = 4, mean = 100)
+
+# 💡 TIP: You can use partial argument names (first letter usually works)
+rnorm(5, m = 100, s = 4)      # "m" for mean, "s" for sd
+rnorm(5, s = 4, m = 100)      # Order still doesn't matter
+```
+
+```
+# Try these examples yourself
+?mean      # Help with the mean() function
+?summary   # Help with the summary() function
+?read.csv  # Help with reading CSV files
+```
+**Note:** If you don't know the exact function name, you can search for functions related to a topic using `??` followed by your topic of interest.
+
+```
+# Search for functions related to "correlation"
+??correlation
+
+# Search for functions related to "plotting"
+??plot
+```
+
+# Creating Your Own Functions
+
+## Basic Function Syntax
+
+The basic syntax for creating a function is:
+
+```
+function_name <- function(argument1, argument2, ...) {
+    # Body of the function (code to execute)
+    # ...
+    return(result)  # Optional: explicitly return a value
+}
+```
+
+## Simple Example: A Greeting Function
+
+```{r}
+# Define a function that prints a greeting
+say_hello <- function(name) {
+    message <- paste("Hello,", name, "!")
+    print(message)
+}
+
+# Call the function
+say_hello("Alice")
+say_hello("Bob")
+```
+
+## Functions That Return Values
+
+By default, a function returns the **last evaluated expression:**
+
+```{r}
+# Function that adds 10 to any number
+add_ten <- function(number) {
+    number + 10  # This is the last expression, so it's returned
+}
+
+result <- add_ten(5)
+result
+```
+
+## Using `return()` Explicitly
+
+You can use `return()` to explicitly specify what to return. This is especially useful for:
+
+  - Returning early from a function
+
+  - Making your code more readable
+
+```{r}
+# Explicit return
+add_twenty <- function(number) {
+    return(number + 20)  # Explicitly return
+    number + 10  # This line never runs!
+}
+
+add_twenty(5)
+```
+
+```{r}
+# Early return example
+check_positive <- function(x) {
+    if (x <= 0) {
+        return("Number is not positive")
+    }
+    # This only runs if x > 0
+    return(sqrt(x))
+}
+
+check_positive(-5)
+check_positive(16)
+```
+
+# Function Arguments
+
+## Required Arguments
+
+Arguments without default values **must** be provided when calling the function:
+
+```{r}
+# Function with two required arguments
+multiply <- function(a, b) {
+    return(a * b)
+}
+
+multiply(4, 5)  # Returns 20
+# multiply(4)   # Error: argument "b" is missing
+```
+
+## Default Arguments
+
+You can assign **default** values to arguments. If the user doesn't provide a value, the default is used:
+
+```{r}
+# Function with default argument
+greet <- function(name, greeting = "Hello") {
+    return(paste(greeting, name, "!"))
+}
+
+greet("Alice")              # Uses default "Hello"
+greet("Bob", "Hi")          # Overrides default
+greet("Charlie", "Good morning")
+```
+
+## Argument Order: Positional vs. Named
+
+You can pass arguments in two ways:
+
+**1. Positional matching** (by order):
+
+```{r}
+# Arguments matched by position
+power <- function(base, exponent) {
+    return(base ^ exponent)
+}
+
+power(2, 3)  # 2^3 = 8
+power(3, 2)  # 3^2 = 9 (different result!)
+```
+
+**2. Named arguments** (by name, order doesn't matter):
+
+```{r}
+# Named arguments - order doesn't matter
+power(exponent = 3, base = 2)  # Same as power(2, 3)
+power(base = 5, exponent = 2)  # 5^2 = 25
+```
+
+**3. Mixing positional and named:**
+
+```{r}
+# Mix positional and named
+power(2, exponent = 4)  # 2^4 = 16
+# power(base = 2, 4)   # Error: positional after named!
+```
+
+**The Ellipsis `...` (Variable Arguments)**
+
+The `...` (called ellipsis or dot-dot-dot) allows a function to accept **any number of arguments**:
+
+```{r}
+# Function that sums any number of arguments
+sum_all <- function(...) {
+    args <- list(...)  # Convert ... to a list
+    total <- 0
+    for (value in args) {
+        total <- total + value
+    }
+    return(total)
+}
+
+sum_all(1, 2, 3)           # Returns 6
+sum_all(10, 20, 30, 40)    # Returns 100
+sum_all(5)                 # Returns 5
+```
+
+```{r}
+# Function to find the maximum of any number of arguments
+max_of_all <- function(...) {
+    args <- list(...)
+    current_max <- args[[1]]
+    for (value in args) {
+        if (value > current_max) {
+            current_max <- value
+        }
+    }
+    return(current_max)
+}
+
+max_of_all(3, 7, 2, 9, 1)  # Returns 9
+```
+
+**Passing `...` to Other Functions**
+
+The ellipsis is also useful for passing arguments from one function to another:
+
+```{r}
+# Wrapper function that adds logging to sum()
+logged_sum <- function(...) {
+    cat("Calculating sum of", length(list(...)), "numbers\n")
+    return(sum(...))  # Pass all ... arguments to sum()
+}
+
+logged_sum(1, 2, 3, 4, 5)
+```
+
+```{r}
+# Wrapper for round() with custom message
+smart_round <- function(x, ...) {
+    cat("Rounding", x, "\n")
+    return(round(x, ...))
+}
+
+smart_round(3.14159, digits = 2)
+```
+
+# Scope: Where Variables Live
+
+## Local vs. Global Variables
+
+Variables defined inside a function are local - they don't exist outside:
+
+```{r}
+my_function <- function(x) {
+    local_var <- x * 2  # Local variable
+    return(local_var)
+}
+
+result <- my_function(5)
+print(result)
+# print(local_var)  # Error: object 'local_var' not found
+```
+
+## Global Variables
+
+Variables defined outside functions are global and can be accessed inside:
+
+```{r}
+global_message <- "Hello from global!"
+
+show_message <- function() {
+    print(global_message)  # Can access global variable
+}
+
+show_message()
+```
+
+## Documenting Functions
+
+Good documentation helps others (and your future self) understand your code:
+
+```
+# Well-documented function
+calculate_bmi <- function(weight_kg, height_m) {
+    """
+    Calculate Body Mass Index (BMI)
+    
+    Args:
+        weight_kg: Weight in kilograms (numeric)
+        height_m: Height in meters (numeric)
+    
+    Returns:
+        BMI value (numeric)
+    
+    Formula:
+        BMI = weight / (height^2)
+    
+    BMI Categories:
+        < 18.5: Underweight
+        18.5-24.9: Normal weight
+        25-29.9: Overweight
+        >= 30: Obese
+    """
+    bmi <- weight_kg / (height_m^2)
+    return(round(bmi, 1))
+}
+
+# Use the function
+calculate_bmi(70, 1.75)
+```
+
+# Examples
+
+## Example 1: Temperature Converter
+
+```{r}
+f_to_c <- function(fahrenheit, round_digits = 1) {
+    ##########
+    # Convert Fahrenheit to Celsius
+    # Args:
+      # fahrenheit: Temperature in Fahrenheit
+      # round_digits: Number of decimal places (default = 1)
+    # Returns:
+      # Temperature in Celsius
+    ##########
+    celsius <- (fahrenheit - 32) * 5/9
+  return(round(celsius, round_digits))
+}
+
+# Convert Celsius to Fahrenheit
+c_to_f <- function(celsius, round_digits = 1) {
+  ########## 
+  # Convert Celsius to Fahrenheit
+  # Args:
+    # celsius: Temperature in Celsius
+    # round_digits: Number of decimal places (default = 1)
+  # Returns:
+  # Temperature in Fahrenheit
+  ##########  
+  fahrenheit <- (celsius * 9/5) + 32
+  return(round(fahrenheit, round_digits))
+}
+
+# Test the functions
+f_to_c(98.6)          # Body temperature: 37.0°C
+c_to_f(37)            # 98.6°F
+f_to_c(32)            # Freezing point: 0°C
+c_to_f(0)             # Freezing point: 32°F
+```
+
+## Example 2: Statistical Calculator
+
+```{r}
+# Calculate several statistics at once
+describe_vector <- function(x) {
+  ##########
+  # Calculate common statistics for a numeric vector
+  # Args: x: Numeric vector
+  # Returns: List containing mean, median, sd, min, max, and length
+  ##########
+    result <- list(
+        length = length(x),
+        mean = mean(x, na.rm = TRUE),
+        median = median(x, na.rm = TRUE),
+        sd = sd(x, na.rm = TRUE),
+        min = min(x, na.rm = TRUE),
+        max = max(x, na.rm = TRUE)
+    )
+    return(result)
+}
+
+# Test the function
+test_scores <- c(85, 92, 78, 90, 88, 95, 82, 87)
+describe_vector(test_scores)
+```
+
+## Example 3: Grade Calculator
+
+```{r}
+# Convert numeric score to letter grade
+letter_grade <- function(score) {
+  ##########
+    # Convert a numeric score to a letter grade
+    # Args: score: Numeric score (0-100)
+    # Returns: Character letter grade (A, B, C, D, or F)
+  ##########
+    if (score >= 90) {
+        return("A")
+    } else if (score >= 80) {
+        return("B")
+    } else if (score >= 70) {
+        return("C")
+    } else if (score >= 60) {
+        return("D")
+    } else {
+        return("F")
+    }
+}
+
+# Calculate class statistics
+class_statistics <- function(grades) {
+##########
+    # Calculate statistics and grade distribution
+    # Args: grades: Numeric vector of grades
+    # Returns: List with summary statistics and grade distribution
+##########
+    # Calculate grade distribution
+    distribution <- table(sapply(grades, letter_grade))
+    
+    # Calculate numerical statistics
+    stats <- list(
+        average = mean(grades),
+        highest = max(grades),
+        lowest = min(grades),
+        distribution = distribution
+    )
+    
+    return(stats)
+}
+
+# Test with sample grades
+sample_grades <- c(95, 82, 67, 78, 91, 88, 75, 92, 84, 70, 65, 98)
+class_statistics(sample_grades)
+```
+
+# Common Mistakes
+
+## Mistake 1: Forgetting to Assign the Function Result
+
+```{r}
+# Wrong: function returns a value but it's not stored
+add <- function(a, b) {
+    return(a + b)
+}
+add(5, 3)  # Result printed but not saved
+
+# Correct: store the result
+result <- add(5, 3)
+print(result)
+```
+
+## Mistake 2: Modifying Global Variables Unintentionally
+
+```{r}
+# Dangerous: modifies global variable
+counter <- 0
+bad_function <- function() {
+    counter <- counter + 1  # Creates LOCAL counter!
+    return(counter)
+}
+bad_function()  # Returns 1
+print(counter)  # Still 0 (global unchanged)
+
+# Better: pass as argument
+good_function <- function(counter) {
+    return(counter + 1)
+}
+counter <- good_function(counter)
+```
+
+## Mistake 3: Forgetting to Use return() for Early Exit
+
+```{r}
+# This works but is inefficient
+check_value_slow <- function(x) {
+    if (x < 0) {
+        result <- "Negative"
+    } else if (x == 0) {
+        result <- "Zero"
+    } else {
+        result <- "Positive"
+    }
+    return(result)
+}
+
+# Better: return early
+check_value_fast <- function(x) {
+    if (x < 0) return("Negative")
+    if (x == 0) return("Zero")
+    return("Positive")
+}
+```
+
+## Mistake 4: Confusing Argument Order with Defaults
+
+```{r}
+# Function with defaults
+calculate <- function(x = 10, y = 5, operation = "add") {
+    if (operation == "add") {
+        return(x + y)
+    } else if (operation == "multiply") {
+        return(x * y)
+    }
+}
+
+calculate(3, 4, "multiply")  # 3 * 4 = 12
+calculate(operation = "multiply")  # Uses defaults: 10 * 5 = 50
+```
+
+# Summary Table
+
+| Concept | Syntax | Example | Description |
+|---------|--------|---------|-------------|
+| Define function | `function() {}` | `my_func <- function(x) { x^2 }` | Create new function |
+| Required arguments | `func(arg1, arg2)` | `power(2, 3)` | Must provide values |
+| Default arguments | `func(arg = default)` | `greet(name, greeting = "Hello")` | Optional with defaults |
+| Named arguments | `func(name = value)` | `power(exponent = 3, base = 2)` | Order doesn't matter |
+| Ellipsis (...) | `func(...)` | `sum_all(...)` | Variable number of args |
+| Return value | `return()` | `return(x + y)` | Explicit return |
+| Implicit return | Last expression | `x + y` | Returns last value |
+| Function documentation | Comments | `# Args:`, `# Returns:` | Explain usage |
+| Local variables | Inside `{}` | `local_var <- 5` | Only exist in function |
+| Early exit | `if() return()` | `if(x < 0) return(0)` | Exit before end |
+
+## Key Summaries
+
+  - **Functions encapsulate reusable code** - write once, use many times
+
+  - **Arguments** can be required or have default values
+
+  - **Named arguments** make code more readable and order-independent
+
+  - `...` (**ellipsis**) allows variable number of arguments
+
+  - **Functions return the last expression** or use `return()` explicitly
+
+  - **Local variables** inside functions don't affect the global environment
+
+  - **Early returns** with `return()` can simplify logic
+
+  - **Documentation** helps others (and future you) understand your code
+
+  - **Functions can call other functions** - building complex operations from simple ones
+
+  - **Testing functions** with different inputs ensures they work correctly
+
+# Exercises
+## Exercise 1: Simple Function
+
+Create a function called square that takes one argument and returns its square (number multiplied by itself). Then test it with the number 7.
+
+```{r}
+# Your code here:
+```
+
+## Solution 
+
+```{r}
+square <- function(x) {
+    return(x^2)
+}
+
+square(7)  # Returns 49
+```
+
+## Exercise 2: Function with Default Argument
+
+Create a function called `discount_price` that takes:
+
+  - price: original price
+
+  - discount_percent: discount percentage (default = 10)
+
+The function should return the price after applying the discount. Then test it with:
+
+  - A $100 item with default discount (10%)
+
+  - A $50 item with 20% discount
+
+```{r}
+# Your code here:
+```
+
+## Solution
+
+```{r}
+discount_price <- function(price, discount_percent = 10) {
+    discount_amount <- price * (discount_percent / 100)
+    final_price <- price - discount_amount
+    return(final_price)
+}
+
+discount_price(100)     # Returns 90 (10% discount)
+discount_price(50, 20)  # Returns 40 (20% discount)
+```
+
+## Exercise 3: Function with Multiple Arguments and Validation
+
+Create a function called `divide_safely` that takes two arguments `a` and `b` and returns `a / b`. However:
+
+  - If `b` is 0, return the message "Error: Division by zero!"
+
+  - Otherwise, return the division result
+
+Test with: `divide_safely(10, 2), divide_safely(10, 0)`
+
+```{r}
+# Your code here:
+```
+
+## Solution
+
+```{r}
+divide_safely <- function(a, b) {
+    if (b == 0) {
+        return("Error: Division by zero!")
+    }
+    return(a / b)
+}
+
+divide_safely(10, 2)    # Returns 5
+divide_safely(10, 0)    # Returns error message
+```
+
+## Exercise 4: Function Using Ellipsis (...)
+
+Create a function called `product` that multiplies any number of arguments together. The function should:
+
+  - Take any number of numeric arguments using `...`
+
+  - Return the product of all arguments
+
+  - If no arguments are provided, return 1
+
+Test with: `product(2, 3, 4), product(5, 10), product()`
+
+```{r}
+# Your code here:
+```
+
+## Solution 
+
+```{r}
+product <- function(...) {
+    args <- list(...)
+    if (length(args) == 0) {
+        return(1)
+    }
+    result <- 1
+    for (num in args) {
+        result <- result * num
+    }
+    return(result)
+}
+
+product(2, 3, 4)    # Returns 24
+product(5, 10)      # Returns 50
+product()           # Returns 1
+```
+
+## Exercise 5: Practical Function - Body Mass Index
+
+Create a function called `bmi_category` that:
+
+  - Takes `weight_kg` (weight in kilograms) and `height_m` (height in meters)
+
+  - Calculates BMI = weight / (height^2)
+
+  - Returns a character string with both the BMI value (rounded to 1 decimal) and the category:
+
+    - Underweight: BMI < 18.5
+
+    - Normal: 18.5 ≤ BMI < 25
+
+    - Overweight: 25 ≤ BMI < 30
+
+    - Obese: BMI ≥ 30
+
+Example output: `"BMI: 24.2 (Normal)"`
+
+```{r}
+# Your code here:
+```
+
+## Solution
+
+```{r}
+bmi_category <- function(weight_kg, height_m) {
+    bmi <- weight_kg / (height_m^2)
+    bmi_rounded <- round(bmi, 1)
+    
+    if (bmi < 18.5) {
+        category <- "Underweight"
+    } else if (bmi < 25) {
+        category <- "Normal"
+    } else if (bmi < 30) {
+        category <- "Overweight"
+    } else {
+        category <- "Obese"
+    }
+    
+    return(paste("BMI:", bmi_rounded, "(", category, ")"))
+}
+
+bmi_category(70, 1.75)   # BMI: 22.9 (Normal)
+bmi_category(95, 1.80)   # BMI: 29.3 (Overweight)
+```
+
+## Exercise 6: Function That Returns a List
+
+Create a function called `number_properties` that:
+
+  - Takes a numeric vector as input
+
+  - Returns a list containing:
+
+    - `sum`: sum of all numbers
+
+    - `mean`: average of all numbers
+
+    - `even`: all even numbers in the vector
+
+    - `odd`: all odd numbers in the vector
+
+    - `count`: total count of numbers
+
+Test with: `number_properties(c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))`
+
+```{r}
+# Your code here:
+```
+
+## Solution 6
+
+```{r}
+number_properties <- function(numbers) {
+    result <- list(
+        sum = sum(numbers),
+        mean = mean(numbers),
+        even = numbers[numbers %% 2 == 0],
+        odd = numbers[numbers %% 2 == 1],
+        count = length(numbers)
+    )
+    return(result)
+}
+
+number_properties(1:10)
+```
+
+## Exercise 7: Function with Early Return
+
+Create a function called `first_even` that:
+
+    Takes any number of arguments using ...
+
+    Returns the first even number it finds
+
+    If no even numbers are found, return "No even numbers"
+
+Test with: `first_even(1, 3, 5, 7, 8, 9), first_even(1, 3, 5, 7)`
+
+```{r}
+# Your code here:
+```
+
+## Solution
+
+```{r}
+first_even <- function(...) {
+    args <- list(...)
+    for (num in args) {
+        if (num %% 2 == 0) {
+            return(num)
+        }
+    }
+    return("No even numbers")
+}
+
+first_even(1, 3, 5, 7, 8, 9)  # Returns 8
+first_even(1, 3, 5, 7)        # Returns "No even numbers"
+```
+
+
+

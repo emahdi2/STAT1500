@@ -1,0 +1,698 @@
+---
+title: '__Topic 3: Vectors in R__'
+author: "Esam Mahdi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction to Vectors
+
+In previous lectures, we worked with **single values** stored in variables. But real-world data rarely comes as isolated numbers. More often, you'll work with **collections** of related data: test scores for an entire class, daily temperatures for a month, or product prices in a shopping cart.
+
+A **vector** is R's fundamental data structure for storing multiple values of the **same type** in a single container. Think of a vector as a row of connected boxes, each holding one value:
+
+```
+[ Box 1 ] [ Box 2 ] [ Box 3 ] [ Box 4 ] [ Box 5 ]
+   25        30        35        40        45
+```
+
+**Why use vectors?**
+
+    - Work with hundreds or thousands of values at once
+
+    - Perform calculations on entire datasets with a single command
+
+    - Filter and subset data based on conditions
+
+    - Avoid writing tedious loops
+
+**Key property:** All elements in a vector must be the same type (all numbers, all text, or all `TRUE/FALSE`).
+
+## Creating Vectors
+**The `c()` Function**
+
+The most common way to create a vector is with `c()`, which stands for `"combine"` or `"concatenate"`. Place your values inside the parentheses, separated by commas.
+
+```{r}
+# Numeric vector (student ages)
+ages <- c(18, 19, 22, 20, 21)
+ages
+
+# Character vector (product names)
+products <- c("Laptop", "Mouse", "Keyboard", "Monitor")
+products
+
+# Logical vector (answers to a quiz)
+quiz_answers <- c(TRUE, FALSE, TRUE, TRUE, FALSE)
+quiz_answers
+```
+
+**Creating Vectors with Patterns**
+
+For large vectors, typing every value with `c()` is impractical. **R** provides several shortcuts:
+
+The **colon operator** `:` $-$ creates sequences of whole numbers:
+
+```{r}
+# Numbers 1 through 15
+numbers_1_to_15 <- 1:15
+numbers_1_to_15
+
+# Counting backwards
+countdown <- 10:1
+countdown
+```
+
+**The `seq()` function** $-$ gives you control over start, end, and step size:
+
+```{r}
+# Even numbers from 2 to 20
+even_numbers <- seq(from = 2, to = 20, by = 2)
+even_numbers
+
+# Decimal sequence
+decimals <- seq(from = 0, to = 1, by = 0.1)
+decimals
+```
+
+**The `rep()` function** $-$ repeats values:
+
+```{r}
+# Repeat 0 five times
+zeros <- rep(0, times = 5)
+zeros
+
+# Repeat a pattern
+pattern <- rep(c("Yes", "No"), times = 4)
+pattern
+```
+
+# Random Vectors
+
+**R** can generate vectors of random numbers from various distributions:
+
+```{r}
+# 10 random numbers between 0 and 100 (uniform distribution)
+random_scores <- runif(n = 10, min = 0, max = 100)
+random_scores
+
+# Round to whole numbers for easier reading
+round(random_scores)
+```
+
+**The `set.seed()` Function**
+
+Why do we need `set.seed()?`
+
+Computers don't actually generate truly random numbers. Instead, they use mathematical algorithms to generate **pseudo-random numbers**. These algorithms start with a **seed value** (a starting number) and then produce a sequence that appears random.
+
+**The problem:** Every time you run a random number generator, you could get a different sequence of numbers. This makes it difficult to:
+
+  - Reproduce your results
+
+  - Debug your code
+
+  - Share reproducible research
+
+**The solution:** `set.seed()` fixes the starting point of the random number generator so that you get the same `"random"` numbers every time you run your code.
+
+**Example Without** `set.seed()`**:**
+
+```{r}
+# Run this code multiple times - you'll get different numbers each time!
+runif(n = 5, min = 0, max = 10)
+# Run again - different numbers!
+runif(n = 5, min = 0, max = 10)
+```
+
+**Example With** `set.seed()`**:**
+
+```{r}
+# Set the seed to a specific number (any positive integer works)
+set.seed(123)
+
+# Generate random numbers
+runif(n = 5, min = 0, max = 10)
+
+# Reset the same seed
+set.seed(123)
+
+# Get the SAME "random" numbers again!
+runif(n = 5, min = 0, max = 10)
+```
+
+**Note:** Different seed values produce different sequences of random numbers:
+
+```{r}
+set.seed(1)
+runif(3, min = 0, max = 100)
+
+set.seed(2)
+runif(3, min = 0, max = 100)
+
+set.seed(100)
+runif(3, min = 0, max = 100)
+```
+
+## Examining Vectors
+
+**Checking Length and Type**
+
+Use these functions to inspect vectors:
+
+```{r}
+# Create a sample vector
+prices <- c(9.99, 14.99, 24.99, 5.99)
+
+# How many elements?
+length(prices)
+
+# What type of data?
+typeof(prices)  # "double" means decimal numbers
+
+# Quick summary
+str(prices)  # Shows type and first few values
+```
+
+**Printing Vectors**
+
+When you print a vector, **R** shows index numbers in brackets `[ ]` at the start of each line. The number tells you the position of the first value on that line:
+
+```{r}
+# Create 50 random numbers to see the index labels
+big_vector <- runif(50)
+big_vector  # Notice the [1], [7], [13], [19], [25], [31], [37], [43], [49] labels
+```
+
+These index labels help you understand where you are in a long vector.
+
+## Accessing Vector Elements: Indexing
+
+**The Golden Rule: R Starts at 1**
+
+Unlike **Python**, **Java**, and **C++** (which start at 0), **R** starts indexing at 1. The first element is position 1, the second is position 2, and so on.
+
+**Single Element Access**
+
+Use square brackets `[]` after the vector name:
+
+```{r}
+# Create a vector of temperatures for a week (Monday = day 1)
+week_temps <- c(72, 74, 68, 70, 75, 77, 73)
+week_temps
+
+# Get Wednesday's temperature (day 3)
+week_temps[3]
+
+# Get Sunday's temperature (day 7)
+week_temps[7]
+```
+
+**Multiple Elements**
+
+Range of consecutive elements with `::`
+
+```{r}
+# Get Monday through Wednesday (days 1-3)
+week_temps[1:3]
+
+# Get Friday through Sunday (days 5-7)
+week_temps[5:7]
+```
+
+Specific non-consecutive elements with `c()`:
+
+```{r}
+# Get Monday, Wednesday, and Friday
+week_temps[c(1, 3, 5)]
+```
+
+Excluding Elements with `-`
+
+Use a minus sign to remove elements:
+
+```{r}
+# All days except Wednesday (remove index 3)
+week_temps[-3]
+
+# Remove first and last days
+week_temps[-c(1, 7)]
+```
+
+**Invalid Indexes**
+
+If you try to access a position that doesn't exist, **R** returns `NA` (Not Available):
+
+```{r}
+# Only 7 days in a week, so index 100 doesn't exist
+week_temps[100]
+```
+
+## Logical Indexing: Filtering with Conditions
+
+This is one of R's most powerful features. Instead of specifying which positions you want, you provide a condition (logical test), and **R** returns all elements that satisfy it.
+
+### Step-by-Step Example
+
+```{r}
+# Test scores from 10 students
+scores <- c(85, 92, 78, 65, 94, 88, 71, 96, 82, 79)
+
+# Step 1: Create a logical vector (TRUE/FALSE) for condition
+above_85 <- scores > 85
+above_85  # TRUE at positions where score > 85
+
+# Step 2: Use that logical vector to filter
+high_scores <- scores[above_85]
+high_scores
+```
+
+### One-Step Filtering
+
+**R** allows you to combine everything in a single line:
+
+```{r}
+# Get all scores above 85 (direct)
+scores[scores > 85]
+
+# Get all scores below 70
+scores[scores < 70]
+
+# Get all scores between 80 and 90
+scores[scores >= 80 & scores <= 90]
+```
+
+### Filtering Character Vectors
+
+```{r}
+# Student names and their grades
+students <- c("Alice", "Bob", "Ahmed", "Diana", "Eve")
+grades <- c("A", "C", "B", "A", "B")
+
+# Get all students who got an A
+students[grades == "A"]
+
+# Get students who DIDN'T get an A
+students[grades != "A"]
+```
+
+**The `%in%` Operator for Membership**
+
+Use `%in%` to check if elements belong to a specified set:
+
+```{r}
+# Fruit inventory
+fruits <- c("apple", "banana", "orange", "apple", "grape", "banana")
+
+# Find all apples and oranges
+fruits[fruits %in% c("apple", "orange")]
+```
+
+**Vectorized Operations: R's Superpower**
+
+Vectorization means operations automatically apply to every element of a vector. You don't need loops like in other languages.
+
+**Arithmetic with Single Values**
+
+```{r}
+# Price list
+original_prices <- c(10, 20, 30, 40, 50)
+
+# Apply 20% discount to ALL prices
+discounted <- original_prices * 0.8
+discounted
+
+# Add tax to ALL prices (8%)
+with_tax <- original_prices * 1.08
+with_tax
+
+# Round all prices to nearest dollar
+rounded_prices <- round(with_tax)
+rounded_prices
+```
+
+**Operations Between Two Vectors**
+
+When you operate on two vectors of the same length, **R** pairs elements by position:
+
+```{r}
+# Hours worked by employees
+hours <- c(40, 35, 38, 42, 36)
+
+# Hourly wage for each employee
+wage <- c(25, 30, 28, 35, 27)
+
+# Calculate each employee's weekly pay
+weekly_pay <- hours * wage
+weekly_pay
+
+# Calculate total payroll
+total_payroll <- sum(weekly_pay)
+total_payroll
+```
+
+**Vectorized Functions**
+
+Many **R** functions work on entire vectors:
+
+```{r}
+# Square root of each number
+numbers <- c(4, 9, 16, 25, 36)
+sqrt(numbers)
+
+# Round each number
+decimals <- c(1.2, 2.7, 3.5, 4.1)
+round(decimals)
+floor(decimals)  # Round down
+ceiling(decimals)  # Round up
+```
+
+**Character Vector Operations**
+
+```{r}
+# Combine first and last names element-wise
+first_names <- c("John", "Jane", "Bob")
+last_names <- c("Smith", "Doe", "Johnson")
+
+full_names <- paste(first_names, last_names)
+full_names
+
+# Convert all names to uppercase
+toupper(full_names)
+```
+
+**Combining Vectors**
+Using `c()` to Join Vectors
+
+```{r}
+# Sales data for two weeks
+week1_sales <- c(100, 150, 200)
+week2_sales <- c(180, 220, 190)
+
+# Combine for monthly report
+month_sales <- c(week1_sales, week2_sales)
+month_sales
+```
+
+**Type Coercion**
+
+If you combine vectors of different types, **R** automatically converts everything to the most flexible type. The order of flexibility is: **character > numeric > logical**
+
+```{r}
+# Numeric + Character = Character
+numbers <- c(1, 2, 3)
+words <- c("A", "B", "C")
+mixed <- c(numbers, words)
+mixed  # Numbers become text
+typeof(mixed)
+
+# Logical + Numeric = Numeric (TRUE = 1, FALSE = 0)
+logical_values <- c(TRUE, FALSE, TRUE)
+numeric_values <- c(10, 20, 30)
+combined <- c(logical_values, numeric_values)
+combined
+```
+
+# Examples
+## Example 1: Student Grade Analysis
+
+```{r}
+# Exam scores for a class of 15 students
+exam_scores <- c(78, 85, 92, 67, 88, 74, 95, 81, 70, 86, 91, 77, 84, 89, 73)
+
+# Basic statistics
+mean_score <- mean(exam_scores)
+min_score <- min(exam_scores)
+max_score <- max(exam_scores)
+
+cat("Class average:", mean_score, "\n")
+cat("Highest score:", max_score, "\n")
+cat("Lowest score:", min_score, "\n")
+
+# Who passed? (score >= 70)
+passing_scores <- exam_scores[exam_scores >= 70]
+cat("Number of students who passed:", length(passing_scores), "\n")
+cat("Passing scores:", passing_scores, "\n")
+
+# Who got an A? (score >= 90)
+a_scores <- exam_scores[exam_scores >= 90]
+cat("A students' scores:", a_scores)
+```
+
+## Example 2: Weather Data Analysis
+
+```{r}
+# Daily high temperatures in July (31 days)
+july_highs <- c(85, 87, 88, 90, 92, 91, 89, 88, 87, 86, 
+                88, 90, 93, 95, 94, 92, 90, 89, 88, 87, 
+                86, 85, 84, 86, 88, 90, 92, 93, 91, 89, 87)
+
+# Days with extreme heat (over 90°F)
+hot_days <- july_highs[july_highs > 90]
+cat("Number of hot days (>90°F):", length(hot_days), "\n")
+
+# Convert all temperatures to Celsius (formula: (°F - 32) × 5/9)
+july_celsius <- (july_highs - 32) * 5/9
+cat("Highs in Celsius (first 5 days):", round(july_celsius[1:5], 1), "\n")
+
+# Weekly average (first week = days 1-7)
+week1_avg <- mean(july_highs[1:7])
+cat("Average temperature in week 1:", week1_avg, "°F\n")
+```
+
+## Example 3: E-commerce Shopping Cart
+
+```{r}
+# Shopping cart
+cart_items <- c("Laptop", "Mouse", "Keyboard", "USB Cable", "Mouse Pad")
+cart_prices <- c(899.99, 24.99, 49.99, 8.99, 12.99)
+
+# Subtotal calculation
+subtotal <- sum(cart_prices)
+cat("Subtotal: $", subtotal, "\n")
+
+# Apply 10% discount
+discount <- subtotal * 0.10
+after_discount <- subtotal - discount
+cat("After 10% discount: $", after_discount, "\n")
+
+# Add tax (8%)
+tax <- after_discount * 0.08
+final_total <- after_discount + tax
+cat("Final total (with tax): $", round(final_total, 2), "\n")
+
+# Find expensive items (over $50)
+expensive_items <- cart_items[cart_prices > 50]
+expensive_prices <- cart_prices[cart_prices > 50]
+cat("Items over $50:", expensive_items, "\n")
+cat("Their prices: $", expensive_prices)
+```
+
+# Common Mistakes
+## Mistake 1: Mixing Types Accidentally
+
+```{r}
+# This works but might not be what you want
+mixed_vector <- c(10, "20", 30)
+mixed_vector  # All become text (notice the quotes)
+typeof(mixed_vector)  # "character"
+```
+
+**Fix:** Keep vectors homogeneous. If you need different types, use lists (future lecture).
+
+## Mistake 2: Off-by-One Errors
+
+```{r}
+my_vector <- c(10, 20, 30, 40, 50)
+
+# This is wrong (indices start at 1, not 0)
+my_vector[0]  # Returns empty vector, not 10
+
+# Correct way to get first element
+my_vector[1]  # Returns 10
+```
+
+## Mistake 3: Forgetting Parentheses with `c()`
+
+```
+# Wrong (creates a single number, not a vector)
+wrong <- 1, 2, 3  # Syntax error
+
+# Correct
+correct <- c(1, 2, 3)
+```
+
+## Mistake 4: Using `=` for Equality Inside Brackets
+
+```{r}
+scores <- c(85, 92, 78, 65)
+
+# Wrong (assignment, not comparison)
+scores[scores = 92]  # Error (gives NA)
+
+# Correct (comparison)
+scores[scores == 92]  # Returns 92
+```
+
+# Summary
+
+| Concept | Syntax | Example |
+|---------|--------|---------|
+| Create vector | `c()` | `c(-1, 20, 13)` |
+| Sequence | `:` | `4:12` |
+| Sequence with step | `seq()` | `seq(1, 10, 0.2)` |
+| Repeat | `rep()` | `rep(2, times = 5)` |
+| Get element | `vector[index]` | `scores[3]` |
+| Get range | `vector[start:end]` | `scores[2:5]` |
+| Exclude elements | `vector[-index]` | `scores[-1]` |
+| Filter with condition | `vector[condition]` | `scores[scores > 80]` |
+| Vector length | `length()` | `length(scores)` |
+| Vector type | `typeof()` | `typeof(scores)` |
+| Element-wise operation | `vector + scalar` | `prices * 0.8` |
+| Element-wise between vectors | `vector1 + vector2` | `hours * wage` |
+
+# Exercises
+## Exercise 1: Create a Vector
+
+Create a vector called temperatures containing the following Celsius temperatures: `22, 25, 21, 24, 26, 23, 20`. Then display the vector.
+
+```{r}
+# Your code here:
+```
+
+## Solution
+
+```{r}
+temperatures <- c(22, 25, 21, 24, 26, 23, 20)
+temperatures
+```
+
+## Exercise 2: Vector Indexing
+
+Using the temperatures vector from Exercise 1, extract:
+
+    The 3rd temperature
+
+    The last temperature
+
+    All temperatures except the first two
+
+```{r}
+# Your code here:
+```
+
+## Solution 
+
+```{r}
+temperatures <- c(22, 25, 21, 24, 26, 23, 20)
+
+# 3rd temperature
+temperatures[3]
+
+# Last temperature (can use length())
+temperatures[length(temperatures)]
+
+# All except first two
+temperatures[-c(1, 2)]
+# Alternative: temperatures[3:7]
+```
+
+## Exercise 3: Filtering with Conditions
+
+You have the following test scores: `88, 72, 95, 68, 91, 77, 84, 63, 96, 82`. Write code to:
+
+    Find all scores above 85
+
+    Find all scores below 70
+
+    Find all scores between 75 and 90 (inclusive)
+
+```{r}
+# Your code here:
+```
+
+## Solution 
+
+```{r}
+scores <- c(88, 72, 95, 68, 91, 77, 84, 63, 96, 82)
+
+# Above 85
+scores[scores > 85]
+
+# Below 70
+scores[scores < 70]
+
+# Between 75 and 90 inclusive
+scores[scores >= 75 & scores <= 90]
+```
+
+## Exercise 4: Vectorized Operations
+
+A store is having a 15% off sale on all items. The original prices are: `25.99, 49.50, 12.75, 88.00, 34.25`. Calculate the sale price for each item and round to 2 decimal places.
+
+```{r}
+# Your code here:
+```
+
+## Solution 
+
+```{r}
+original_prices <- c(25.99, 49.50, 12.75, 88.00, 34.25)
+
+# Apply 15% discount (multiply by 0.85)
+sale_prices <- original_prices * 0.85
+
+# Round to 2 decimal places
+round(sale_prices, 2)
+```
+
+## Exercise 5: Combining and Summarizing
+
+Daily steps for two weeks: `Week 1 = 8500, 7200, 9500, 6800, 10200, 8800, 7700. Week 2 = 9100, 8300, 7600, 10400, 8900, 7200, 9800`.
+
+Combine both weeks into one vector and calculate:
+
+    Total steps across all days
+
+    Average daily steps
+
+    Maximum steps in a single day
+
+    Days with over 9000 steps
+
+```{r}
+# Your code here:
+```
+
+## Solution
+
+```{r}
+week1 <- c(8500, 7200, 9500, 6800, 10200, 8800, 7700)
+week2 <- c(9100, 8300, 7600, 10400, 8900, 7200, 9800)
+
+# Combine weeks
+all_steps <- c(week1, week2)
+
+# Calculations
+sum(all_steps)  # Total steps
+mean(all_steps)  # Average daily steps
+max(all_steps)  # Maximum steps in a day
+all_steps[all_steps > 9000]  # Days with over 9000 steps
+```
+
+
+
+
+
+
+

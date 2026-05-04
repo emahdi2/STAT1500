@@ -1,0 +1,609 @@
+---
+title: "__Topic 1: From R Installation to Basic Calculations__"
+author: "Esam Mahdi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: cerulean
+    self_contained: true
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+# Getting Started: Installing R and RStudio
+
+Before you can run any **R** code, you need to install two things:
+
+1. **R** (the engine): Download it from [CRAN (Comprehensive R Archive Network](https://cran.r-project.org/). Choose your operating system (Windows, Mac, or Linux) and follow the default installation steps.
+
+2. **RStudio** (the interface): Download the free Desktop version from [posit.co](https://posit.co/download/rstudio-desktop). Install it after installing **R**. **RStudio** will automatically detect your **R** installation.
+
+Once both are installed, launch **RStudio** (not **R** directly).
+
+## Why Switch from R to RStudio?
+
+You could write **R** code directly in the basic **R** console that opens when you click the **R** icon. However, **RStudio** provides a much more productive environment.
+
+**Forget using plain R. Use RStudio from now on because:**
+
+- It offers **four organized panes** (Script Editor, Console, Environment/History, Files/Plots/Packages/Help).
+
+- You can write and save **scripts** (`.R` or `.Rmd` files) to reuse your work.
+
+- It has **syntax highlighting**, code completion, and built-in plotting viewer.
+
+- It integrates **R Markdown**, version control (`Git`), and project management.
+
+All the code in this document can be run in RStudio by clicking the green **"Run"** button or pressing `Ctrl+Enter` (Windows/Linux) / `Cmd+Enter` (Mac) on a line or selected block.
+
+## Understanding R Packages: Base, Main, and Outsider
+
+R's functionality is organized into **packages** (collections of functions, data, and documentation). When you install R, you automatically receive two distinct sets of packages: **Base packages** and **Recommended (Main) packages**. Anything beyond these is called an **Outsider (Contributed) package**.
+
+### Base Packages (Always Available, No `library()` Needed)
+
+Base (essential) packages are the absolute core of **R**. They are loaded automatically when you start **R**. You **do not** need to use `library()` for them. There are 15 base packages. Here is the complete list of Base packages in a standard **R** installation:
+
+| Package | Description |
+|-------|-------------------------|
+| `base` | Fundamental **R** functions: arithmetic, `I/O`, data structures, condition handling, etc. |
+| `compiler` | Byte code compiler for **R** functions. |
+| `datasets` | Built-in example datasets (e.g., `iris`, `mtcars`, `AirPassengers`). |
+| `graphics` | Base graphics functions for plotting (e.g., `plot()`, `hist()`, `barplot()`). |
+| `grDevices` | Graphics device management and color handling (e.g., `colors()`, `png()`, `pdf()`). |
+| `grid` | A more flexible graphics system than base graphics (alternative to graphics). |
+| `methods` | Formal object-oriented programming (S4 classes and methods). |
+| `parallel` | Support for parallel computing (`snow`, `multicore`, etc.). |
+| `splines` | Regression spline functions and classes. |
+| `stats` | Extensive statistical functions: distributions, tests, linear models, clustering, etc. |
+| `stats4` | S4 classes and methods for statistical modeling. |
+| `tcltk` | Interface to the Tcl/Tk GUI toolkit (for creating simple GUI windows). |
+| `translations` | A system package containing pre-compiled translation files (`.mo` files) used to display R’s messages and errors in different languages. |
+| `tools` | Tools for package development and checking. |
+| `utils` | Utilities: package installation, data entry, file handling, object inspection (`str()`, `head()`, `summary()`). |
+  
+**Note:** `methods` and `stats4` are technically part of the base distribution but may require explicit loading with `library(methods)` in some very old or minimal **R** setups. However, in modern **R**, they load automatically.
+
+### Main (Recommended) Packages
+
+These are Recommended packages distributed with **R** but **not loaded by default**. You must load them using `library(package_name)` when you need them. They are maintained by the **R** Core Team or highly trusted developers. There are 15 recommended packages. 
+
+## Main (Recommended) Packages
+
+| Package | Description |
+|-------|---------------|
+| `boot` | Bootstrap functions (resampling methods) and related data. |
+| `class` | Functions for classification (k-nearest neighbours, LVQ, etc.). |
+| `cluster` | Clustering algorithms (hierarchical, k-means, PAM, etc.). |
+| `codetools` | Code analysis tools for R (finding unused variables, detecting issues). |
+| `foreign` | Read and write data from other statistical systems (SPSS, Stata, SAS, etc.). |
+| `KernSmooth` | Kernel smoothing and density estimation (Wand & Jones methods). |
+| `lattice` | Trellis graphics (multivariate data visualization, an alternative to ggplot2). |
+| `MASS` | Functions from the book "Modern Applied Statistics with S" (Venables & Ripley). |
+| `Matrix` | Sparse and dense matrix operations and classes. |
+| `mgcv` | Generalized additive models (GAMs) with smooth term estimation. |
+| `nlme` | Linear and nonlinear mixed-effects models. |
+| `nnet` | Feed-forward neural networks and multinomial log-linear models. |
+| `rpart` | Recursive partitioning and regression trees (CART-like models). |
+| `spatial` | Functions for spatial statistics (Kriging, point patterns). |
+| `survival` | Survival analysis (Kaplan-Meier, Cox proportional hazards models). |
+
+### Outsider (Contributed) Packages
+
+These are created by the global **R** community and hosted on CRAN, Bioconductor, or GitHub. They cover almost everything: data manipulation (`dplyr`), visualization (`ggplot2`), machine learning (`caret, tidymodels`), reporting (`rmarkdown`), web apps (`shiny`), and thousands more.
+
+**You must install outsider packages first before using them** (only once per **R** installation):
+
+```
+# Install a single package from CRAN
+install.packages("ggplot2")
+
+# Install multiple packages at once
+install.packages(c("dplyr", "tidyr", "readr", "purrr"))
+```
+
+After installation, load the package into your current **R** session using `library()` or `require()`:
+
+```
+library(ggplot2)
+library(dplyr)
+```
+
+**How to See Which Packages Are Already Installed (Base + Main + Outsiders)**
+
+```
+# See all installed packages (Base + Main + any outsiders you added)
+installed.packages()
+
+# See only Base packages
+installed.packages()[installed.packages()[, "Priority"] == "base", "Package"]
+
+# See only Recommended (Main) packages
+installed.packages()[installed.packages()[, "Priority"] == "recommended", "Package"]
+```
+
+**Important distinction:**
+
+- **Base packages** → Always available. No installation. No `library()` or `require()`` needed.
+
+- **Main (Recommended) packages** → Already installed with **R**. Need `library()` to use.
+
+- **Outsider packages** → Need `install.packages()` once, then `library()` each session.
+    
+# Variables
+
+A **variable** is a named container that stores a value or object. Think of it like a labeled box where you can put data. Once you create a variable, you can use its name to access whatever value it holds.
+
+**Why use variables?**
+
+    - Store values for later use
+
+    - Give meaningful names to data
+
+    - Avoid repeating the same value multiple times
+
+    - Make your code easier to read and maintain
+    
+## Creating Variables with `<-`
+
+In **R**, the primary way to create a variable is using the assignment operator `<-` (a less-than sign followed by a hyphen).
+
+**Basic Variable Assignment**
+```{r}
+# Store a number
+age <- 25
+
+# Store text
+message <- "Learning R is fun!"
+
+# Store the result of a calculation
+is_equal <- (sqrt(144) == 12)
+
+# Display the variables
+age
+message
+is_equal
+```
+
+**Key Points:**
+
+    - The variable name goes on the left.
+
+    - The value goes on the right
+
+    - The <- operator points from right to left (value goes into the variable)
+  
+    - The variable name can contain letters, numbers, dots (.), and underscores (_).
+
+    - The variable name must start with a letter or a dot (but a dot cannot be followed by a number).
+
+    - The variable name is case-sensitive (myVar is different from myvar).
+
+    - The variable name cannot use reserved words like `if`, `else`, `TRUE`, `FALSE`
+
+```{r}
+# Valid variable names
+student_age <- 20
+student.age <- 21
+student_age_2 <- 22
+.student_age <- 23
+
+# Invalid variable names (these would cause errors)
+# 2student <- 20      # Can't start with a number
+# student-age <- 20   # Hyphens not allowed (R thinks it's subtraction)
+# if <- 20            # Reserved word
+```
+
+**Use Spaces for Readability**
+
+Always put spaces around the assignment operator to make your code clearer:
+
+```{r}
+# Poor style (hard to read)
+x<-5
+x
+
+# Good style (clear and readable)
+x <- 5
+x
+```
+
+**Variables Can Be Reassigned**
+
+A variable always holds its most recent value. When you assign a new value, the old one is replaced:
+
+```{r}
+temperature <- 72
+temperature  # Shows 72
+
+temperature <- 68  # Reassign new value
+temperature  # Now shows 68
+```
+
+**Using Variables in Calculations**
+
+Once variables contain numeric values, you can use them in mathematical operations:
+
+```{r}
+width <- 10
+height <- 5
+
+area <- width * height
+area  # 50
+
+perimeter <- 2 * (width + height)
+perimeter  # 30
+```
+
+**Note:** Many programming languages use `=` for assignment, but **R** prefers `<-`. Here's why:
+
+**The Equals Sign Has Multiple Roles**
+
+In **R**, `=` is used for two different purposes:
+
+    Assigning function arguments (recommended)
+
+    Assigning variables (possible but not recommended)
+
+**Example:** When you use `=` inside a function call, it does NOT create a variable
+
+```{r}
+# Example: round() function has two arguments: x and digits
+rounded <- round(x = 3.14159, digits = 2)  # 'digits = 2' sets a function argument and doesn't create a 'digits' variable
+rounded
+```
+
+```
+# Trying to access 'digits' causes an error
+digits  # Would output: Error: object 'digits' not found
+```
+
+**The `<-` Operator Always Creates Variables**
+
+```{r}
+# Using <- inside a function creates a variable
+round(3.14159, digits <- 2)  # Creates 'digits' variable
+digits  # Now digits exists and has value 2
+```
+
+**Warning:** Creating variables inside function calls like this is usually NOT what you want. It can lead to unexpected behavior and cluttered workspaces.
+
+**Best Practice Summary**
+
+| Purpose	| Recommended Operator | Example
+|---------------------|----------|-----------------|
+| Variable assignment	| <- | my_var <- 10 |
+| Function arguments	| =	|round(3.14, digits = 2) |
+| Equality comparison |	== |	5 == 5 (returns TRUE) |
+
+```{r}
+# Correct usage examples
+score <- 95                    # Variable assignment
+result <- round(score / 3, digits = 2)  # Function argument with =
+
+# Checking equality
+score == 95                    # TRUE
+score == 100                   # FALSE
+```
+
+## Alternative (to `<-`) Assignment Methods 
+
+**The `=` Operator (Not Recommended)**
+
+While you can use `=` for assignment, it's considered poor style:
+
+```{r}
+# Possible but not recommended
+total = 100
+total
+
+# Better to use <-
+total <- 100
+```
+
+**The `assign()` Function**
+
+**R** also provides the `assign()` function for creating variables. This is useful in advanced programming scenarios:
+
+```{r}
+# assign(variable_name, value)
+assign("apples", 5)
+assign("oranges", 3)
+
+apples
+oranges
+
+# Calculate total fruit
+total_fruit <- apples + oranges
+total_fruit  # 8
+```
+
+**Right Assignment `->` (Rarely Used)** 
+
+**R** also allows assignment from left to right using `->`, but this is rarely used:
+
+```{r}
+# Right assignment (uncommon)
+10 -> my_number
+my_number  # 10
+
+# Left assignment (standard and preferred)
+my_number <- 10
+```
+
+# Examples
+
+## Example 1: Tracking Personal Finances
+
+```{r}
+# Income and expenses
+monthly_salary <- 5000
+rent <- 1500
+groceries <- 600
+utilities <- 300
+entertainment <- 400
+
+# Calculate savings
+total_expenses <- rent + groceries + utilities + entertainment
+monthly_savings <- monthly_salary - total_expenses
+
+monthly_savings  # 2200
+```
+
+## Example 2: Converting Temperatures
+
+```{r}
+# Convert Celsius to Fahrenheit
+celsius_temp <- 25
+fahrenheit_temp <- (celsius_temp * 9/5) + 32
+
+fahrenheit_temp  # 77°F
+```
+
+## Example 3: Building a Simple Calculator
+
+```{r}
+# Store two numbers
+num1 <- 15
+num2 <- 4
+
+# Perform operations
+sum_result <- num1 + num2
+difference <- num1 - num2
+product <- num1 * num2
+quotient <- num1 / num2
+
+# Display results
+sum_result      # 19
+difference      # 11
+product         # 60
+quotient        # 3.75
+```
+
+# Common Mistakes to Avoid
+
+**Mistake 1:** Using `<-` in a function argument when you meant `=`
+
+```
+# Wrong: round(3.14, digits <- 2)  # Creates unwanted variable
+# Correct: round(3.14, digits = 2)  # This is correct as function argument
+```
+
+**Mistake 2:** Forgetting spaces
+
+```
+# Bad: x<-5
+# Good: x <- 5
+```
+
+**Mistake 3:** Using `=` instead of `==` for comparison
+
+```
+# Wrong: if (x = 10)  # This is assignment, not comparison
+# Correct: if (x == 10)  # This checks equality
+```
+
+**Mistake 4:** Using reserved words as variable names
+
+```
+# Don't: TRUE <- 5
+# Don't: if <- 10
+```
+
+# Summary Table
+
+| Concept | Operator | Example | Purpose |
+|---------|----------|---------|---------|
+| Variable assignment (preferred) | `<-` | `x <- 10` | Store values |
+| Variable assignment (allowed but not preferred) | `=` | `x = 10` | Store values (avoid) |
+| Function arguments | `=` | `round(x, digits = 2)` | Pass parameters to functions |
+| Equality comparison | `==` | `x == 10` | Test if values are equal |
+| Assignment from right to left (rare) | `->` | `10 -> x` | Alternative assignment |
+
+# Exercises
+
+## Exercise 1: Variable Assignment Order
+
+What is the final value of result after running the code below? Write your answer, then uncomment and run the code to check.
+
+```{r}
+# Write your prediction here: ___________
+
+# result <- 100
+# result <- 50
+# result <- 75
+# result
+```
+
+## Solution
+
+```{r}
+# The final value is 75 (the last assignment)
+result <- 100
+result <- 50
+result <- 75
+result  # 75
+```
+
+## Exercise 2: Using Variables in Calculations
+
+Create variables for length and width, then calculate the area of a rectangle. Replace the placeholders with your code.
+
+```{r}
+# Assign length as 12 and width as 8
+# Then calculate area (length × width)
+
+# Your code here:
+# length <- 
+# width <- 
+# area <- 
+# area
+```
+
+## Solution 
+```{r}
+length <- 12
+width <- 8
+area <- length * width
+area  # 96
+```
+
+## Exercise 3: Temperature Conversion
+
+Convert 100°F to Celsius using the formula: `°C = (°F - 32) × 5/9`
+
+```{r}
+# Store 100°F in a variable called fahrenheit
+# Calculate celsius and store it in a variable
+# Display the celsius value
+
+# Your code here:
+```
+
+## Solution
+```{r}
+fahrenheit <- 100
+celsius <- (fahrenheit - 32) * 5/9
+celsius  # 37.77778
+```
+
+## Exercise 4: Understanding Assignment Operators
+
+Predict what will happen when you run the code below. Then uncomment and run to check.
+
+```{r}
+
+# Prediction: Will 'digits' exist after this code runs?
+# Why or why not?
+
+# round(42.987, digits = 2)
+
+# Check if 'digits' exists (uncomment to test)
+# digits
+```
+
+## Solution 
+```{r}
+# digits will NOT exist because = inside function arguments
+# does NOT create variables
+round(42.987, digits = 2)
+# digits  # Would give error: object 'digits' not found
+```
+
+## Exercise 5: Creating a Shopping Total
+
+Create variables for different items and their prices, then calculate the total cost including 8% tax.
+
+```{r}
+# Item prices:
+# Apples: $3.50
+# Bananas: $2.00
+# Oranges: $4.00
+# Bread: $5.50
+
+# Calculate subtotal, tax, and total
+# Tax rate is 8% (0.08)
+```
+
+## Solution
+```{r}
+apples <- 3.50
+bananas <- 2.00
+oranges <- 4.00
+bread <- 5.50
+
+subtotal <- apples + bananas + oranges + bread
+tax <- subtotal * 0.08
+total <- subtotal + tax
+
+total  # $16.20
+```
+
+## Exercise 6: Swapping Variables
+
+Swap the values of two variables without directly reassigning them to their opposite values.
+
+```{r}
+a <- 10
+b <- 20
+# Write code to swap the values so a becomes 20 and b becomes 10
+# Hint: Use a temporary variable
+
+# Your solution here:
+```
+
+## Solution
+```{r}
+a <- 10
+b <- 20
+
+# Swap using temporary variable
+temp <- a
+a <- b
+b <- temp
+
+a  # 20
+b  # 10
+```
+
+## Exercise 7
+
+Install the `tidyverse` package, then load it and explain what you get.
+
+*Hint: The `tidyverse` is actually a collection of multiple packages designed for data science. Use `install.packages()` to install it, then `library(tidyverse)` to load it. After loading, look at the message that appears in the console.*
+
+```{r, eval=FALSE}
+# Write your code here
+```
+
+1. How many packages are loaded when you run library(tidyverse)?
+
+2. List at least 5 of the core packages included in the tidyverse.
+
+3. What is the main purpose of the tidyverse?
+
+## Solution
+
+```
+# Install and load tidyverse
+install.packages("tidyverse")
+library(tidyverse)
+
+# Question 1 Answer:
+# 8 packages (ggplot2, dplyr, tidyr, readr, purrr, tibble, stringr, forcats)
+
+# Question 2 Answer:
+# ggplot2 (visualization), dplyr (manipulation), tidyr (tidying), 
+# readr (import), purrr (functional programming)
+
+# Question 3 Answer:
+# The tidyverse provides a consistent and efficient set of tools for 
+# the entire data science workflow from importing to visualizing data.
+```
+

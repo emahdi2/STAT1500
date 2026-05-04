@@ -1,0 +1,929 @@
+---
+title: "__Topic 7 - Data Frames in R__"
+author: "Esam Mahdi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+# Introduction to Data Frames
+
+In data analysis, information is typically organized in **tables** with rows and columns - just like an Excel spreadsheet or a database table. **R data frames** are specifically designed to hold this kind of tabular data.
+
+## What is a Data Frame?
+
+A **data frame** is a two-dimensional data structure where:
+
+  - **Columns** represent **variables** (features, attributes)
+
+  - **Rows** represent **observations** (records, cases)
+
+  - Different columns can hold **different data types** (numeric, character, logical, etc.)
+
+##Data Frames vs. Other Structures
+
+| Structure | Dimensions | Data Type Restriction | Best Used For |
+|-----------|------------|---------------------|----------------|
+| Vector | 1D | All elements same type | Single variable data |
+| Matrix | 2D | All elements same type | Homogeneous numerical data |
+| Data Frame | 2D | Different types per column | Real-world datasets |
+| List | 1D | Any type (can be mixed) | Grouping diverse objects |
+
+## How Data Frames Work
+
+Under the hood, a data frame is actually a **list** where:
+
+  - Each **list element** is a **column** (vector)
+
+  - All column vectors must have the **same length**
+
+  - Column vectors can be of **different types**
+
+Think of a data frame as a **spreadsheet** where:
+
+  - Each column is a vector (all same type)
+
+  - Different columns can have different types
+
+  - Each row represents one complete observation
+
+```
+Data Frame Example:
+     Name     Age  Grade  Passed
+1    Alice    22     85    TRUE
+2    Bob      19     92    TRUE
+3  Charlie    21     67   FALSE
+
+Columns: character, numeric, numeric, logical
+Rows: 3 observations
+```
+
+# Creating Data Frames
+
+## Basic Creation with `data.frame()`
+
+Pass vectors of the **same length** to the `data.frame()` function. Each vector becomes a column:
+
+```{r}
+# Create vectors of the same length
+names <- c("Alice", "Bob", "Charlie", "Diana", "Eve")
+ages <- c(22, 19, 21, 23, 20)
+scores <- c(85, 92, 78, 88, 95)
+passed <- c(TRUE, TRUE, FALSE, TRUE, TRUE)
+
+# Create a data frame
+students <- data.frame(names, ages, scores, passed)
+students
+```
+
+**Notice:** The column names are taken from the vector names we used.
+
+## Naming Columns
+
+You can specify column names directly when creating the data frame:
+
+```{r}
+# Create data frame with custom column names
+students <- data.frame(
+  Student_Name = names,
+  Age = ages,
+  Exam_Score = scores,
+  Passed_Exam = passed
+)
+students
+```
+
+## Setting Row Names
+
+You can also give names to the rows:
+
+```{r}
+students <- data.frame(
+  Student_Name = names,
+  Age = ages,
+  Exam_Score = scores,
+  Passed_Exam = passed,
+  row.names = c("S1", "S2", "S3", "S4", "S5")
+)
+students
+```
+
+## Viewing Column and Row Names
+
+```{r}
+# Get column names
+colnames(students)
+
+# Change column names
+colnames(students) <- c("Name", "Age", "Score", "Passed")
+students
+
+# Get row names
+rownames(students)
+
+# Change row names
+rownames(students) <- c("Student1", "Student2", "Student3", "Student4", "Student5")
+students
+```
+
+## Important Note About Character Columns
+
+By default, R converts character vectors into factors (a special data type for categorical data). To prevent this, use `stringsAsFactors = FALSE`:
+
+```{r}
+# Default behavior (converts to factor)
+students_default <- data.frame(Name = names, Age = ages)
+typeof(students_default$Name)  # Returns "integer" (factor is stored as integer)
+
+# Prevent conversion to factor
+students_correct <- data.frame(Name = names, Age = ages, stringsAsFactors = FALSE)
+typeof(students_correct$Name)  # Returns "character"
+
+# We'll learn more about factors in the next lesson
+```
+
+## Exploring Data Frames with Built-in Datasets
+
+**R** comes with several built-in datasets for practice. We'll use `mtcars` (Motor Trend Car Road Tests) which contains data about 32 cars from the 1970s.
+
+```{r}
+# Load the mtcars dataset
+cars <- mtcars
+
+# View the first few rows
+head(cars)
+```
+
+**What's in mtcars?**
+
+  - **mpg**: Miles per gallon (fuel efficiency)
+
+  - **cyl**: Number of cylinders
+
+  - **disp**: Displacement (engine size)
+
+  - **hp**: Horsepower
+
+  - **wt**: Weight (in 1000 lbs)
+
+  - And several other variables...
+
+## Basic Information Functions
+
+```{r}
+# Get dimensions (rows, columns)
+dim(cars)       # 32 rows, 11 columns
+
+# Number of rows
+nrow(cars)      # 32
+
+# Number of columns
+ncol(cars)      # 11
+
+# Column names
+colnames(cars)
+
+# First few rows (default 6)
+head(cars)
+
+# Last few rows
+tail(cars)
+
+# View a specific number of rows
+head(cars, 3)
+tail(cars, 2)
+```
+
+## Understanding Data Structure with `str()`
+
+The `str()` function gives a compact summary of the data frame's structure:
+
+```{r}
+str(cars)
+```
+
+**What `str()` tells us:**
+
+  - `data.frame: 32 obs. of 11 variables` - 32 rows, 11 columns
+
+  - `$ mpg : num` - mpg column is numeric
+
+  - `$ cyl : num` - cyl column is numeric
+
+    And so on...
+
+## Summary Statistics with `summary()`
+
+The `summary()` function provides statistical summaries for each column:
+
+```{r}
+summary(cars)
+```
+
+**For numeric columns:** `min, 1st quartile, median, mean, 3rd quartile, max`
+
+**For character/factor columns:** counts of each unique value
+
+# Accessing Data Frame Elements
+
+Because data frames are lists under the hood, they support list-style indexing (using `$`, `[[]]`, and `[]`).
+
+## List-Style Indexing
+
+```{r}
+# Using $ (returns a vector)
+cars$mpg
+
+# Using [[ ]] with column name (returns a vector)
+cars[["mpg"]]
+
+# Using [[ ]] with column number (returns a vector)
+cars[[1]]
+
+# Using [ ] with column number (returns a data frame)
+cars[1]          # Single column as data frame
+cars[1:3]        # Multiple columns as data frame
+```
+
+**Key Difference:**
+
+  - `[]` returns a data frame (even with one column)
+
+  - `[[]]` or `$` returns the actual vector
+
+```{r}
+# Compare the results
+result1 <- cars[1]      # Data frame
+result2 <- cars[[1]]    # Numeric vector
+
+class(result1)  # "data.frame"
+class(result2)  # "numeric"
+```
+
+## Matrix-Style Indexing (Rows and Columns)
+
+Use square brackets with a comma separating rows and columns: `[rows, columns]`
+
+```{r}
+# Single element: row 5, column 3
+cars[5, 3]
+
+# Entire row 5 (all columns)
+cars[5, ]
+
+# Entire column 3 (all rows)
+cars[, 3]
+
+# Multiple rows: rows 1-5, all columns
+cars[1:5, ]
+
+# Multiple columns: all rows, columns 1, 3, 5
+cars[, c(1, 3, 5)]
+
+# Range of rows and columns: rows 1-5, columns 2-4
+cars[1:5, 2:4]
+
+# Using column names
+cars[1:5, c("mpg", "hp", "wt")]
+
+# Using row names (if they exist)
+cars["Mazda RX4", ]
+```
+
+## Excluding Rows or Columns
+
+Use the minus sign `-` to exclude:
+
+```{r}
+# Exclude row 1
+cars[-1, ]
+
+# Exclude columns 2 and 4
+cars[, -c(2, 4)]
+
+# Exclude first 5 rows
+cars[-(1:5), ]
+
+# Keep all rows except first 3, keep all columns except last 2
+cars[-(1:3), -(9:11)]
+```
+
+## Logical Indexing (Filtering)
+
+Create a logical condition to filter rows:
+
+```{r}
+# Find cars with mpg > 25 (good fuel efficiency)
+cars[cars$mpg > 25, ]
+
+# Find cars with horsepower > 200
+cars[cars$hp > 200, ]
+
+# Combine conditions with & (AND)
+cars[cars$mpg > 20 & cars$hp > 100, ]
+
+# Combine conditions with | (OR)
+cars[cars$cyl == 4 | cars$cyl == 8, ]
+
+# Find cars with weight less than 2.5 tons
+cars[cars$wt < 2.5, ]
+```
+
+## The `subset()` Function
+
+The `subset()` function provides an alternative way to filter:
+
+```{r}
+# Basic filtering
+subset(cars, mpg > 25)
+
+# Multiple conditions
+subset(cars, mpg > 20 & hp > 100)
+
+# Select specific columns as well
+subset(cars, mpg > 20, select = c(mpg, hp, wt))
+
+# Exclude columns
+subset(cars, mpg > 20, select = -c(vs, am, gear, carb))
+```
+
+# Modifying Data Frames
+
+## Adding New Columns
+
+Use `$` or `[[]]` to add a new column:
+
+```{r}
+# Create a fresh copy of mtcars
+cars <- mtcars
+
+# Add horsepower per cylinder column
+cars$hp_per_cylinder <- cars$hp / cars$cyl
+
+# Add power-to-weight ratio
+cars$power_to_weight <- cars$hp / cars$wt
+
+# View the new columns
+head(cars[, c("hp", "cyl", "hp_per_cylinder", "power_to_weight")])
+```
+
+## Adding Columns with Matrix Indexing
+
+```{r}
+# Add a column using matrix indexing
+cars[, "mpg_squared"] <- cars$mpg^2
+
+# Add a logical column
+cars$is_efficient <- cars$mpg > 25
+
+head(cars[, c("mpg", "mpg_squared", "is_efficient")])
+```
+
+## Removing Columns
+
+Set a column to `NULL` to remove it:
+
+```{r}
+# Remove single column
+cars$mpg_squared <- NULL
+
+# Remove multiple columns
+cars$hp_per_cylinder <- NULL
+cars$power_to_weight <- NULL
+
+head(cars)
+```
+
+## Removing Rows
+
+Use matrix indexing with negative indices or logical conditions:
+
+```{r}
+# Create a fresh copy
+cars <- mtcars
+
+# Remove row 1 (Mazda RX4)
+cars_without_first <- cars[-1, ]
+head(cars_without_first, 3)
+
+# Remove rows 1 through 5
+cars_without_first5 <- cars[-(1:5), ]
+head(cars_without_first5, 3)
+
+# Remove cars with low mpg (less than 15)
+cars_high_mpg <- cars[cars$mpg >= 15, ]
+nrow(cars_high_mpg)  # Count of remaining cars
+```
+
+## Combining Data Frames
+
+**`rbind()` - Stack rows vertically**
+
+```{r}
+# Create two data frames with same columns
+df1 <- data.frame(ID = 1:3, Name = c("A", "B", "C"))
+df2 <- data.frame(ID = 4:6, Name = c("D", "E", "F"))
+
+# Combine by rows
+combined_rows <- rbind(df1, df2)
+combined_rows
+```
+
+**`cbind()` - Combine columns horizontally**
+
+```{r}
+# Create two data frames with same number of rows
+df_a <- data.frame(ID = 1:4, Score = c(85, 90, 78, 92))
+df_b <- data.frame(Grade = c("B", "A", "C", "A"))
+
+# Combine by columns
+combined_cols <- cbind(df_a, df_b)
+combined_cols
+```
+
+## Common Data Frame Operations
+
+**Summary Functions on Columns**
+
+```{r}
+# Calculate statistics on numeric columns
+mean(cars$mpg)        # Average mpg
+median(cars$hp)       # Median horsepower
+sd(cars$wt)           # Standard deviation of weight
+min(cars$disp)        # Minimum displacement
+max(cars$qsec)        # Maximum quarter mile time
+
+# Multiple statistics
+summary(cars$mpg)
+
+# Column-wise operations
+colMeans(cars[, c("mpg", "hp", "wt")])
+colSums(cars[, c("mpg", "hp", "wt")])
+```
+
+**Adding Meaningful Row Names**
+
+```{r}
+# Create a data frame with student data
+students <- data.frame(
+  Name = c("Alice", "Bob", "Charlie"),
+  Score = c(92, 87, 95),
+  Grade = c("A", "B", "A"),
+  stringsAsFactors = FALSE
+)
+
+# Add meaningful row names (e.g., student IDs)
+rownames(students) <- c("STU001", "STU002", "STU003")
+students
+
+# Access by row name
+students["STU002", ]
+```
+
+**Sorting Data Frames**
+  
+```{r}
+# Sort by mpg (ascending order)
+cars_sorted_mpg <- cars[order(cars$mpg), ]
+head(cars_sorted_mpg[, c("mpg")])
+
+# Sort by mpg (descending order)
+cars_sorted_mpg_desc <- cars[order(-cars$mpg), ]
+head(cars_sorted_mpg_desc[, c("mpg")])
+
+# Sort by multiple columns (first by cyl, then by mpg)
+cars_sorted <- cars[order(cars$cyl, cars$mpg), ]
+head(cars_sorted[, c("cyl", "mpg")])
+```
+
+# Examples
+
+## Example 1: Student Grade Analysis
+
+```{r}
+# Create student dataset
+students <- data.frame(
+  Student_ID = 1001:1008,
+  Name = c("Emma", "Liam", "Sophia", "Noah", "Olivia", "Mason", "Ava", "Ethan"),
+  Math = c(85, 92, 78, 88, 95, 82, 91, 87),
+  Science = c(88, 85, 92, 79, 94, 88, 86, 90),
+  English = c(82, 90, 85, 91, 88, 84, 92, 89),
+  Attendance = c(95, 98, 92, 96, 99, 94, 97, 93),
+  stringsAsFactors = FALSE
+)
+
+# Add average score column
+students$Average <- (students$Math + students$Science + students$English) / 3
+
+# Add letter grade column
+students$Letter_Grade <- ifelse(students$Average >= 90, "A",
+                         ifelse(students$Average >= 80, "B",
+                         ifelse(students$Average >= 70, "C", "F")))
+
+# Find top 3 students
+top_students <- students[order(-students$Average), ][1:3, ]
+top_students[, c("Name", "Average", "Letter_Grade")]
+
+# Find students with high attendance (>95%)
+high_attendance <- students[students$Attendance > 95, ]
+high_attendance[, c("Name", "Attendance", "Average")]
+
+# Summary statistics
+summary(students[, c("Math", "Science", "English", "Average", "Attendance")])
+```
+
+## Example 2: Sales Data Analysis
+
+```{r}
+# Create sales dataset
+sales <- data.frame(
+  Date = c("Jan", "Jan", "Jan", "Feb", "Feb", "Feb", "Mar", "Mar", "Mar"),
+  Product = c("A", "B", "C", "A", "B", "C", "A", "B", "C"),
+  Units_Sold = c(150, 200, 120, 180, 220, 140, 200, 250, 160),
+  Price = c(10, 15, 20, 10, 15, 20, 10, 15, 20),
+  stringsAsFactors = FALSE
+)
+
+# Calculate Revenue
+sales$Revenue <- sales$Units_Sold * sales$Price
+
+# View the data
+sales
+
+# Total revenue by product
+aggregate(Revenue ~ Product, data = sales, sum)
+
+# Average units sold by month
+aggregate(Units_Sold ~ Date, data = sales, mean)
+
+# Best selling month for each product
+for(product in unique(sales$Product)) {
+  product_data <- sales[sales$Product == product, ]
+  best_month <- product_data[which.max(product_data$Units_Sold), "Date"]
+  cat("Product", product, "sold best in", best_month, "\n")
+}
+```
+
+# Common Mistakes to Avoid
+
+## Mistake 1: Confusing `[]` and `[[]]`
+
+```{r}
+df <- data.frame(x = 1:3, y = 4:6)
+
+# Wrong: returns a data frame, not a vector
+result_wrong <- df[1]
+result_wrong + 10  # Error!
+
+# Correct: returns the actual vector
+result_correct <- df[[1]]
+result_correct + 10  # Works: 11 12 13
+```
+
+## Mistake 2: Forgetting the Comma in Matrix Indexing
+
+```{r}
+df <- data.frame(A = 1:3, B = 4:6, C = 7:9)
+
+# Wrong: missing comma means select columns (returns data frame)
+df[1:2]  # Returns columns 1-2
+
+# Correct: comma means rows 1-2, all columns
+df[1:2, ]  # Returns rows 1-2
+```
+
+## Mistake 3: Mixing Data Types in a Column (Impossible!)
+
+```{r}
+# This will coerce all elements to the same type
+mixed <- data.frame(
+  x = c(1, "two", 3),  # All become character
+  stringsAsFactors = FALSE
+)
+mixed$x  # "1", "two", "3" (all text)
+typeof(mixed$x)  # "character"
+```
+
+## Mistake 4: Using `$` with Computed Names
+
+```{r}
+df <- data.frame(score = 1:5, grade = c("F", "D", "C", "B", "A"))
+
+column_name <- "score"
+
+# Wrong: looks for column literally named 'column_name'
+df$column_name  # NULL
+
+# Correct: use [[]] for variable column names
+df[[column_name]]  # Returns the score column
+```
+
+# Summary Table
+
+| Operation | Syntax | Example | Result |
+|-----------|--------|---------|--------|
+| Create data frame | `data.frame()` | `data.frame(x = 1:3, y = 4:6)` | New data frame |
+| Prevent factor conversion | `stringsAsFactors = FALSE` | `data.frame(x = "a", stringsAsFactors = FALSE)` | Character column |
+| View first rows | `head()` | `head(df, 10)` | First 10 rows |
+| View structure | `str()` | `str(df)` | Compact summary |
+| Summary statistics | `summary()` | `summary(df)` | Statistical summary |
+| Dimensions | `dim()` | `dim(df)` | Rows and columns |
+| Column names | `colnames()` | `colnames(df)` | Vector of column names |
+| Row names | `rownames()` | `rownames(df)` | Vector of row names |
+| Access column (vector) | `$` or `[[ ]]` | `df$col` or `df[["col"]]` | Vector |
+| Access column (data frame) | `[ ]` | `df["col"]` | Data frame |
+| Access element | `[row, col]` | `df[2, 3]` | Single value |
+| Access row | `[row, ]` | `df[2, ]` | Data frame row |
+| Access column | `[, col]` | `df[, 3]` | Vector |
+| Subset rows | `[condition, ]` | `df[df$x > 5, ]` | Filtered data frame |
+| Subset with function | `subset()` | `subset(df, x > 5)` | Filtered data frame |
+| Add column | `$new <-` | `df$new <- 1:5` | Modified data frame |
+| Remove column | `<- NULL` | `df$col <- NULL` | Modified data frame |
+| Remove rows | `[-rows, ]` | `df[-1, ]` | Data frame without row 1 |
+| Sort | `order()` | `df[order(df$x), ]` | Sorted data frame |
+| Combine rows | `rbind()` | `rbind(df1, df2)` | Stacked data frame |
+| Combine columns | `cbind()` | `cbind(df1, df2)` | Joined data frame |
+
+## Key Summaries
+
+  - **Data frames** are R's version of spreadsheets/tables
+
+  - **Columns** can have different data types (numeric, character, logical)
+
+  - Data frames are **lists** under the hood (each column is a list element)
+
+  - Use `data.frame()` to create data frames manually
+
+  - `str()` and `summary()` help explore new datasets
+
+  - `$` and `[[]]` access columns as vectors
+
+  - `[rows, columns]` provides matrix-style indexing
+
+  - **Logical indexing** is powerful for filtering rows
+
+  - `rbind()` and `cbind()` combine data frames
+
+  - `stringsAsFactors = FALSE` prevents automatic conversion to factors
+
+# Exercises
+## Exercise 1: Create and Explore a Data Frame
+
+Create a data frame called employees with the following columns:
+
+  - `name`: "John", "Sarah", "Mike", "Lisa", "David"
+
+  - `age`: 28, 34, 42, 29, 38
+
+  - `department`: "Sales", "IT", "HR", "Marketing", "IT"
+
+  - `salary`: 55000, 75000, 65000, 58000, 82000
+
+  - `full_time`: TRUE, TRUE, FALSE, TRUE, TRUE
+
+Then:
+
+  - View the structure of the data frame
+
+  - View a summary of the data frame
+
+  - Display the first 3 rows
+
+```{r}
+# Your code here:
+```
+
+## Solution 
+
+```{r}
+employees <- data.frame(
+  name = c("John", "Sarah", "Mike", "Lisa", "David"),
+  age = c(28, 34, 42, 29, 38),
+  department = c("Sales", "IT", "HR", "Marketing", "IT"),
+  salary = c(55000, 75000, 65000, 58000, 82000),
+  full_time = c(TRUE, TRUE, FALSE, TRUE, TRUE),
+  stringsAsFactors = FALSE
+)
+
+str(employees)
+summary(employees)
+head(employees, 3)
+```
+
+## Exercise 2: Indexing and Subsetting
+
+Using the `employees` data frame from Exercise 1:
+
+  - Extract the entire `salary` column as a vector
+
+  - Extract the `department` column as a data frame
+
+  - Extract the row for "Mike"
+
+  - Extract the names and salaries of employees over 35
+
+  - Extract employees in the IT department who are over 35
+
+```{r}
+# Your code here:
+```
+
+## Solution 
+
+```{r}
+# Salary as vector
+employees$salary
+
+# Department as data frame
+employees["department"]
+
+# Row for Mike
+employees[employees$name == "Mike", ]
+
+# Names and salaries of employees over 35
+employees[employees$age > 35, c("name", "salary")]
+
+# IT employees over 35
+employees[employees$department == "IT" & employees$age > 35, ]
+```
+
+## Exercise 3: Modifying Data Frames
+
+Start with the `employees` data frame. Then:
+
+  - Add a new column called `bonus` equal to 10% of salary
+
+  - Add a column called `total_compensation` equal to salary + bonus
+
+  - Update the salary of "Sarah" to 78000
+
+  - Remove the `full_time` column
+
+  - Add a new row for "Anna" (age 31, department "Sales", salary 62000)
+
+```{r}
+# Your code here:
+```
+
+## Solution 
+
+```{r}
+# Add bonus and total_compensation
+employees$bonus <- employees$salary * 0.10
+employees$total_compensation <- employees$salary + employees$bonus
+
+# Update Sarah's salary
+employees[employees$name == "Sarah", "salary"] <- 78000
+employees[employees$name == "Sarah", "total_compensation"] <- employees[employees$name == "Sarah", "salary"] * 1.10
+
+# Remove full_time column
+employees$full_time <- NULL
+
+# Add new row for Anna
+new_row <- data.frame(
+  name = "Anna",
+  age = 31,
+  department = "Sales",
+  salary = 62000,
+  bonus = 6200,
+  total_compensation = 68200,
+  stringsAsFactors = FALSE
+)
+employees <- rbind(employees, new_row)
+employees
+```
+
+## Exercise 4: Working with mtcars
+
+Using the built-in `mtcars` dataset:
+
+  - Find all cars with 4 cylinders and mpg greater than 25
+
+  - Find all cars with horsepower between 100 and 150
+
+  - Add a new column called `displacement_per_cylinder` (disp divided by cyl)
+
+  - Find the car with the highest horsepower per cylinder
+
+  - Calculate the average mpg for cars with automatic (am = 0) vs manual (am = 1) transmission
+
+```{r}
+# Your code here:
+```
+
+## Solution
+
+```{r}
+# 4-cylinder cars with mpg > 25
+mtcars[mtcars$cyl == 4 & mtcars$mpg > 25, ]
+
+# Cars with hp between 100 and 150
+mtcars[mtcars$hp >= 100 & mtcars$hp <= 150, ]
+
+# Add displacement per cylinder
+mtcars$disp_per_cyl <- mtcars$disp / mtcars$cyl
+
+# Car with highest hp per cylinder
+mtcars$hp_per_cyl <- mtcars$hp / mtcars$cyl
+mtcars[which.max(mtcars$hp_per_cyl), ]
+
+# Average mpg by transmission type
+mtcars_auto <- mtcars[mtcars$am == 0, "mpg"]
+mtcars_manual <- mtcars[mtcars$am == 1, "mpg"]
+mean(mtcars_auto)
+mean(mtcars_manual)
+```
+
+## Exercise 5: Combining Data Frames
+
+Create two data frames:
+
+  - `sales_Q1` with columns: `product` ("A", "B", "C"), `revenue` (100, 150, 120)
+
+  - `sales_Q2` with columns: `product` ("A", "B", "C"), `revenue` (110, 160, 130)
+
+Then:
+
+  - Combine them vertically to show all sales
+
+  - Add a new column called `quarter` to each before combining
+
+  - Combine them horizontally to compare Q1 and Q2 side by side
+
+```{r}
+# Your code here:
+```
+
+## Solution
+
+```{r}
+# Create sales data frames
+sales_Q1 <- data.frame(product = c("A", "B", "C"), revenue = c(100, 150, 120))
+sales_Q2 <- data.frame(product = c("A", "B", "C"), revenue = c(110, 160, 130))
+
+# Combine vertically
+all_sales <- rbind(sales_Q1, sales_Q2)
+all_sales
+
+# Add quarter column
+sales_Q1$quarter <- "Q1"
+sales_Q2$quarter <- "Q2"
+all_sales_with_q <- rbind(sales_Q1, sales_Q2)
+all_sales_with_q
+
+# Combine horizontally
+colnames(sales_Q2)[2] <- "revenue_Q2"
+combined <- cbind(sales_Q1, sales_Q2[, "revenue_Q2", drop = FALSE])
+combined
+```
+
+## Exercise 6: Analysis Challenge
+
+Using the `mtcars` dataset, answer these questions:
+
+  - What is the average horsepower of cars with 8 cylinders? With 4 cylinders?
+
+  - Which car has the best fuel efficiency (highest mpg)?
+
+  - Create a subset of cars with weight less than 3 tons (3000 lbs)
+
+  - Which cylinder group (4, 6, or 8) has the highest average weight?
+
+  - Find all cars that are both powerful (hp > 150) and heavy (wt > 4)
+
+```{r}
+# Your code here:
+```
+
+## Solution
+
+```{r}
+# Average horsepower by cylinder
+mean(mtcars[mtcars$cyl == 8, "hp"])
+mean(mtcars[mtcars$cyl == 4, "hp"])
+
+# Best fuel efficiency
+mtcars[which.max(mtcars$mpg), ]
+
+# Cars under 3 tons (3000 lbs = 3.0 in wt since wt is in 1000 lbs)
+light_cars <- mtcars[mtcars$wt < 3, ]
+light_cars
+
+# Average weight by cylinder group
+aggregate(wt ~ cyl, data = mtcars, mean)
+
+# Powerful and heavy cars
+mtcars[mtcars$hp > 150 & mtcars$wt > 4, ]
+```
+
+
+

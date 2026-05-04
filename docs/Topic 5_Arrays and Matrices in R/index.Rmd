@@ -1,0 +1,1048 @@
+---
+title: '__Topic 5: Arrays and Matrices in R__'
+author: "Esam Mahdi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction to Arrays and Matrices
+
+In the previous lecture, we learned about **vectors** - one-dimensional collections of data. But real-world data often has **multiple dimensions**: sales figures by month and product category, temperature readings by city and day, or test scores by student and subject.
+
+**Arrays** extend vectors to multiple dimensions. A **matrix** is a special case of an array with exactly **two dimensions** (rows and columns).
+
+Think of dimensions this way:
+
+  - **Vector:** A single row of boxes (1D)
+
+  - **Matrix:** A grid of boxes with rows and columns (2D)
+
+  - **Array:** A cube or hypercube of boxes (3D or more)
+
+```
+Vector (1D):     [10] [20] [30] [40] [50]
+
+Matrix (2D):      [10] [20] [30]
+                  [40] [50] [60]
+                  [70] [80] [90]
+
+Array (3D):      Two or more matrices stacked like a book
+```
+
+## Creating Arrays
+
+**The `array()` Function**
+
+The most flexible way to create an array is with the `array()` function:
+
+```{r}
+# Create a 3D array: 3 rows, 4 columns, 2 layers
+my_array <- array(1:24, dim = c(3, 4, 2))
+my_array
+```
+
+**Understanding the output:**
+
+  - , , 1 means "first layer" (first matrix)
+
+  - , , 2 means "second layer" (second matrix)
+
+  - The numbers show: [row, column, layer]
+
+## Creating a Matrix with `matrix()`
+
+For 2D data, `matrix()` is more convenient:
+
+```{r}
+# Create a 3x4 matrix filled with numbers 1 through 12
+my_matrix <- matrix(1:12, nrow = 3, ncol = 4)
+my_matrix
+```
+
+## The Dimension Attribute
+
+You can also convert a vector into an array by giving it a `dim` attribute:
+
+```{r}
+# Start with a vector
+z <- 1:24
+z
+# Give it dimensions (3 rows, 4 columns, 2 layers)
+dim(z) <- c(3, 4, 2)
+z  # Now it's a 3D array!
+```
+
+## The Recycling Rule
+
+If your data vector is shorter than the array size, **R** recycles (repeats) the values:
+
+```{r}
+# Only provide 6 numbers, but need 12 for a 3x4 matrix
+short_data <- c(1, 2, 3, 4, 5, 6)
+recycled_matrix <- matrix(short_data, nrow = 3, ncol = 4)
+recycled_matrix  # R repeats 1,2,3,4,5,6 to fill all 12 positions
+
+# Create an array of all zeros (very common!)
+zero_array <- array(0, dim = c(3, 4, 2))
+zero_array
+```
+
+## Column-Major Order (Important!)
+
+**R** fills arrays in column-major order (like FORTRAN, not like C/Python). This means the **first subscript moves fastest**:
+
+```{r}
+# A 3x4 matrix filled with 1:12
+example <- matrix(1:12, nrow = 3, ncol = 4)
+example
+
+# The order of filling is:
+# [1,1]=1, [2,1]=2, [3,1]=3,  (first column)
+# [1,2]=4, [2,2]=5, [3,2]=6,  (second column)
+# [1,3]=7, [2,3]=8, [3,3]=9,  (third column)
+# [1,4]=10, [2,4]=11, [3,4]=12 (fourth column)
+```
+
+To fill by rows instead (like a spreadsheet), use `byrow = TRUE`:
+
+```{r}
+row_filled <- matrix(1:12, nrow = 3, ncol = 4, byrow = TRUE)
+row_filled
+```
+
+## Matrix Indexing
+
+Matrix indexing allows you to extract specific rows, columns, or individual values from a matrix. The basic syntax is `matrix[row_index, column_index]`.
+
+```{r}
+# Create a sample matrix
+M <- matrix(1:20, nrow = 4, ncol = 5, byrow = TRUE)
+rownames(M) <- c("Row1", "Row2", "Row3", "Row4")
+colnames(M) <- c("Col1", "Col2", "Col3", "Col4", "Col5")
+M
+
+# Extract a single value (row 2, column 3)
+M[2, 3]
+
+# Extract an entire row (all columns of row 3)
+M[3, ]
+
+# Extract an entire column (all rows of column 4)
+M[, 4]
+
+# Extract multiple specific rows and columns
+M[c(1, 3), c(2, 4)]
+
+# Extract a range of rows and columns
+M[2:4, 3:5]
+
+# Exclude rows or columns (negative indexing)
+M[-1, ]        # All rows except row 1
+M[, -c(2, 4)]  # All columns except columns 2 and 4
+M[-2, -3]      # All rows except row 2, all columns except column 3
+```
+
+**Understanding Different Indexing Patterns**
+
+```
+# x[,3] means extract all values in column 3
+M[, 3]
+
+# x[-1, c(2,7)] means extract all rows except the 1st one, 
+# and only columns 2 and 7 (if column 7 exists)
+M[-1, c(2, 5)]  # Column 5 instead of 7 (since we only have 5 columns)
+
+# Using logical indexing
+M[M > 15]  # Returns all values greater than 15 as a vector
+
+# Using column names
+M[, "Col3"]
+M["Row2", ]
+M["Row2", "Col4"]
+```
+
+## Accessing Array Elements: Indexing
+
+**Single Element Access**
+
+Use square brackets with commas separating dimensions:
+
+```{r}
+# Create a 4x5 matrix
+sales <- matrix(1:20, nrow = 4, ncol = 5)
+sales
+
+# Get element at row 2, column 3
+sales[2, 3]
+
+# Get element at row 4, column 5
+sales[4, 5]
+```
+
+## Entire Rows or Columns
+
+Leave a dimension blank to get all elements in that dimension:
+
+```{r}
+# Get entire 2nd row (all columns)
+sales[2, ]
+
+# Get entire 3rd column (all rows)
+sales[, 3]
+
+# Get entire matrix (all rows, all columns)
+sales[, ]
+```
+
+## Ranges and Submatrices
+
+Use `:` to specify ranges:
+
+```{r}
+# Get rows 1-3 and columns 2-4
+sales[1:3, 2:4]
+
+# Get rows 2-4 and column 5 only
+sales[2:4, 5]
+
+# Get rows 1 and 3, and columns 2, 4, and 5
+sales[c(1, 3), c(2, 4, 5)]
+```
+
+## Excluding Elements
+
+Use `-` to exclude rows or columns:
+
+```{r}
+# Exclude row 2
+sales[-2, ]
+
+# Exclude columns 3 and 4
+sales[, -c(3, 4)]
+
+# Exclude row 1 and column 5
+sales[-1, -5]
+```
+
+## Advanced Indexing with Matrices
+
+**Using an Index Matrix** 
+
+Sometimes you need to extract or modify specific elements that don't form a neat rectangle. Use an **index matrix** - a matrix where each row contains the coordinates of one element.
+
+```{r}
+# Create a 4x5 array
+X <- array(1:20, dim = c(4, 5))
+X
+
+# We want to extract and modify:
+# X[1,3], X[2,2], X[3,1]
+
+# Create an index matrix (3 rows, 2 columns)
+i <- matrix(c(1, 3,   # Row 1, Column 3
+              2, 2,   # Row 2, Column 2
+              3, 1),  # Row 3, Column 1
+            nrow = 3, ncol = 2, byrow = TRUE)
+i
+
+# Extract the three elements
+X[i]
+
+# Replace those three elements with zeros
+X[i] <- 0
+X
+```
+
+**Practical Example: Block Design Matrix**
+
+```{r}
+# Suppose we have 10 plots, 3 blocks, and 4 varieties
+n <- 10  # plots
+b <- 3   # blocks
+v <- 4   # varieties
+
+# Create design matrices (initialize with zeros)
+Xb <- matrix(0, n, b)  # Block design matrix
+Xv <- matrix(0, n, v)  # Variety design matrix
+
+# Suppose these are our assignments
+blocks <- c(1, 2, 1, 3, 2, 1, 3, 2, 3, 1)
+varieties <- c(2, 1, 3, 2, 4, 1, 3, 4, 2, 1)
+
+# Create index matrices
+ib <- cbind(1:n, blocks)  # Plot number and block assignment
+iv <- cbind(1:n, varieties)  # Plot number and variety assignment
+
+# Fill the design matrices
+Xb[ib] <- 1
+Xv[iv] <- 1
+
+# View results
+head(Xb)
+head(Xv)
+
+# Create incidence matrix (which varieties appear in which blocks)
+N <- t(Xb) %*% Xv  # Matrix multiplication
+N  # Shows counts of each variety in each block
+```
+
+# Array Operations
+
+## Element-wise Operations
+
+Arrays support the same vectorized operations as vectors:
+
+```{r}
+A <- matrix(1:9, nrow = 3, ncol = 3)
+B <- matrix(10:18, nrow = 3, ncol = 3)
+
+# Element-wise addition
+A + B
+
+# Element-wise multiplication (NOT matrix multiplication!)
+A * B
+
+# Element-wise division
+B / A
+
+# Scalar operations apply to all elements
+A * 2
+A + 100
+A ^ 2
+```
+
+## Matrix Multiplication (`%*%`)
+
+For true matrix multiplication, use `%*%`:
+
+```{r}
+C <- matrix(1:6, nrow = 2, ncol = 3)  # 2x3 matrix
+D <- matrix(7:12, nrow = 3, ncol = 2) # 3x2 matrix
+
+C
+D
+
+# Matrix multiplication: (2x3) %*% (3x2) = (2x2)
+C %*% D
+
+# Matrix multiplication is NOT commutative
+# D %*% C  # This would give an error (dimensions don't match)
+```
+
+# Matrix-Specific Functions
+
+## Basic Information
+
+```{r}
+M <- matrix(1:12, nrow = 3, ncol = 4)
+
+# Dimensions
+nrow(M)  # Number of rows
+ncol(M)  # Number of columns
+dim(M)   # Both dimensions
+
+# Check if it's a matrix
+is.matrix(M)
+
+# Get row and column names (initially NULL)
+rownames(M)
+colnames(M)
+
+# Add names
+rownames(M) <- c("Row1", "Row2", "Row3")
+colnames(M) <- c("Col1", "Col2", "Col3", "Col4")
+M
+```
+
+## Summary Statistics on Matrices
+
+```{r}
+M <- matrix(1:12, nrow = 3, ncol = 4)
+M
+
+# Minimum and maximum of entire matrix
+min(M)
+max(M)
+
+# Sum of all elements
+sum(M)
+
+# Row-wise operations
+rowSums(M)    # Sum of each row
+rowMeans(M)   # Mean of each row
+
+# Column-wise operations
+colSums(M)    # Sum of each column
+colMeans(M)   # Mean of each column
+```
+
+**The `apply()` Function**
+
+The `apply()` function is a powerful tool for applying a function to margins (rows or columns) of a matrix or array. The syntax is:
+
+`apply(X, MARGIN, FUN, ...)`
+
+  - X: your matrix or array
+
+  - MARGIN: 1 for rows, 2 for columns, c(1,2) for both
+
+  - FUN: the function to apply (e.g., sum, mean, sd, etc.)
+
+```{r}
+M <- matrix(1:12, nrow = 3, ncol = 4)
+M
+
+# Apply sum to rows (MARGIN = 1)
+apply(M, 1, sum)  # Same as rowSums(M)
+
+# Apply mean to columns (MARGIN = 2)
+apply(M, 2, mean)  # Same as colMeans(M)
+
+# Apply custom function to rows
+apply(M, 1, function(x) max(x) - min(x))
+
+# Apply to both dimensions (returns original matrix)
+apply(M, c(1,2), function(x) x^2)
+```
+
+**Transpose (`t()`)**
+
+```{r}
+M <- matrix(1:6, nrow = 2, ncol = 3)
+M
+
+# Transpose (swap rows and columns)
+t(M)
+```
+
+**Diagonal (`diag()`)**
+
+The `diag()` function behaves differently depending on its input:
+
+```{r}
+# If given a vector, creates a diagonal matrix
+diag(c(10, 20, 30))
+
+# If given a matrix, extracts the diagonal
+M <- matrix(1:9, nrow = 3)
+M
+diag(M)  # Returns c(1, 5, 9)
+
+# If given a single number, creates an identity matrix
+diag(4)  # 4x4 identity matrix
+```
+
+**Trace (Sum of Diagonal Elements)**
+
+**R** doesn't have a built-in trace function, but we can create one:
+
+```{r}
+# Create a square matrix
+M <- matrix(1:9, nrow = 3)
+M
+
+# Calculate the trace (sum of diagonal elements)
+sum(diag(M))  # 1 + 5 + 9 = 15
+
+# Another example
+M2 <- matrix(c(4, 2, 1, 3, 7, 2, 5, 1, 6), nrow = 3)
+M2
+sum(diag(M2))  # 4 + 7 + 6 = 17
+```
+
+## Advanced Matrix Operations
+
+**Solving Linear Equations (`solve()`)**
+
+Solve the system: `A %*% x = b`
+
+```{r}
+# Create a 3x3 matrix A
+A <- matrix(c(3, 1, 1,
+              1, 2, 1,
+              1, 1, 2), nrow = 3, byrow = TRUE)
+A
+
+# Create a vector b
+b <- c(5, 5, 6)
+
+# Solve for x
+x <- solve(A, b)
+x
+
+# Verify: A %*% x should equal b
+A %*% x
+```
+
+## Matrix Inverse
+
+```{r}
+# Compute the inverse of A
+A_inv <- solve(A)
+A_inv
+
+# Verify: A %*% A_inv = Identity matrix
+round(A %*% A_inv, 2)  # Should be identity matrix
+```
+
+Important Note: It's more efficient and numerically stable to use `solve(A, b)` rather than `solve(A) %*% b`.
+
+## Eigenvalues and Eigenvectors
+
+**What are Eigenvalues and Eigenvectors?**
+
+In linear algebra, eigenvectors are special vectors that only get scaled (not rotated) when a linear transformation is applied to them. The eigenvalue is the scaling factor.
+
+  - **Eigenvector:** A direction that remains unchanged under a transformation
+
+  - **Eigenvalue:** The factor by which the eigenvector is stretched or compressed
+
+Applications include:
+
+  - Principal Component Analysis (PCA) for dimensionality reduction
+
+  - Google's PageRank algorithm
+
+    Image compression
+
+  - Stability analysis in engineering
+    
+```{r}
+# Create a symmetric matrix
+S <- matrix(c(4, 2, 1,
+              2, 3, 2,
+              1, 2, 4), nrow = 3, byrow = TRUE)
+S
+
+# Compute eigenvalues and eigenvectors
+eigen_result <- eigen(S)
+
+# Eigenvalues
+eigen_result$values
+
+# Eigenvectors (columns of this matrix)
+eigen_result$vectors
+
+# Verify: For first eigenvector, S %*% v = λ * v
+lambda_1 <- eigen_result$values[1]
+v1 <- eigen_result$vectors[, 1]
+S %*% v1  # This should equal
+lambda_1 * v1  # This
+
+# Get only eigenvalues (more efficient)
+eigen(S, only.values = TRUE)$values
+```
+
+## Cross Products
+
+`crossprod()` is more efficient than `t(X) %*% Y`:
+
+```{r}
+X <- matrix(runif(20), nrow = 5, ncol = 4)
+Y <- matrix(runif(15), nrow = 5, ncol = 3)
+
+# These are equivalent, but crossprod is faster
+identical(t(X) %*% Y, crossprod(X, Y))
+
+# Cross product of X with itself
+crossprod(X)  # Same as t(X) %*% X
+```
+
+## Permuting Array Dimensions (`aperm()`)
+
+The `aperm()` function rearranges the dimensions of an array (like transposing for higher dimensions):
+
+```{r}
+# Create a 3D array (2x3x4)
+original <- array(1:24, dim = c(2, 3, 4))
+original
+
+# Permute dimensions: new order is (3, 1, 2)
+# So original dimension 3 becomes new dimension 1
+# original dimension 1 becomes new dimension 2
+# original dimension 2 becomes new dimension 3
+permuted <- aperm(original, perm = c(3, 1, 2))
+dim(original)   # 2 3 4
+dim(permuted)   # 4 2 3
+
+# For a matrix, aperm() with c(2,1) is transpose
+M <- matrix(1:6, nrow = 2, ncol = 3)
+M
+aperm(M, c(2, 1))  # Same as t(M)
+```
+
+## Combining and Converting Matrices
+
+**`rbind()` and `cbind()` $-$ Combining Matrices**
+
+The `rbind()` function combines matrices by **binding rows** (stacking vertically).
+The `cbind()` function combines matrices by **binding columns** (joining horizontally).
+
+```{r}
+# Create two matrices
+matrix1 <- matrix(1:6, nrow = 2, ncol = 3)
+matrix2 <- matrix(7:12, nrow = 2, ncol = 3)
+
+matrix1
+matrix2
+
+# Stack vertically (row bind)
+rbind(matrix1, matrix2)
+
+# Join horizontally (column bind)
+cbind(matrix1, matrix2)
+
+# Combine different dimensions
+matrix3 <- matrix(13:18, nrow = 3, ncol = 2)
+matrix1
+matrix3
+```
+
+```
+# Row bind with different row counts (number of columns of matrices must match)
+
+rbind(matrix1, matrix3)  # matrix1 has 3 columns, matrix3 has 2 columns? This will give an error!
+```
+
+```{r}
+# Make them compatible first
+matrix3_compatible <- matrix(13:18, nrow = 3, ncol = 3)
+rbind(matrix1, matrix3_compatible)
+
+# Adding a vector as a new row
+new_row <- c(100, 110, 120)
+rbind(matrix1, new_row)
+
+# Adding a vector as a new column
+new_col <- c(200, 210)
+cbind(matrix1, new_col)
+```
+
+**Converting Matrices to Vectors with `as.vector()`**
+
+The `as.vector()` function converts a matrix into a vector **by columns** (column-major order):
+
+```{r}
+# Create a matrix
+M <- matrix(1:6, nrow = 2, ncol = 3)
+M
+
+# Convert to vector (column by column)
+as.vector(M)  # Returns: 1,2,3,4,5,6 (down columns)
+
+# Compare with filling by rows
+M_row <- matrix(1:6, nrow = 2, ncol = 3, byrow = TRUE)
+M_row
+as.vector(M_row)  # Still goes down columns: 1,4,2,5,3,6
+
+# To get row-wise conversion, transpose first
+as.vector(t(M))  # Row-wise: 1,3,5,2,4,6? No, let's see
+t(M)  # Transpose first
+as.vector(t(M))  # Now row-wise of original
+```
+
+**Lists vs. Arrays/Matrices**
+
+A **list** is a different type of data structure that can hold elements of **different types** (unlike vectors, matrices, and arrays which require all elements to be the same type).
+
+**Key differences:**
+
+  - **Matrix/Array:** All elements must be the same type (homogeneous)
+
+  - **List:** Can contain different types (heterogeneous) - numbers, text, matrices, even other lists
+  
+```{r}
+# Matrix requires same type (all numeric)
+matrix(1:5, nrow = 1)  # Works fine
+
+# But mixing types causes coercion
+mixed_matrix <- matrix(c(1, "two", 3, "four"), nrow = 2)
+mixed_matrix  # Numbers become text
+
+# Lists can handle different types naturally
+my_list <- list(
+  name = "John",
+  age = 25,
+  scores = c(85, 90, 88),
+  matrix = matrix(1:4, nrow = 2)
+)
+my_list
+
+# Access list elements with [[ ]]
+my_list[[1]]  # First element
+my_list$name  # Access by name
+my_list$scores
+
+# You can store matrices inside lists
+list_of_matrices <- list(
+  M1 = matrix(1:4, nrow = 2),
+  M2 = matrix(5:8, nrow = 2)
+)
+list_of_matrices
+list_of_matrices$M1
+```
+   
+**Example: Sales Data Analysis**
+
+```{r}
+# Sales data: 4 quarters, 3 products, 2 regions
+sales <- array(c(120, 135, 110, 140,   # Product 1, Region 1
+                 95, 105, 115, 100,    # Product 2, Region 1
+                 80, 90, 85, 95,       # Product 3, Region 1
+                 100, 115, 105, 120,   # Product 1, Region 2
+                 85, 95, 90, 100,      # Product 2, Region 2
+                 70, 80, 75, 85),      # Product 3, Region 2
+               dim = c(4, 3, 2))
+dimnames(sales) <- list(
+  Quarter = c("Q1", "Q2", "Q3", "Q4"),
+  Product = c("A", "B", "C"),
+  Region = c("North", "South")
+)
+sales
+
+# Total sales by product (using apply)
+apply(sales, 2, sum)  # Sum over quarters and regions
+
+# Total sales by region (using apply)
+apply(sales, 3, sum)
+
+# Quarterly sales for Product A in North region
+sales[, "A", "North"]
+
+# Best quarter for each product-region combination
+apply(sales, c(2, 3), which.max)
+```
+
+# Common Mistakes
+
+## Mistake 1: Confusing `*` and `%*%`
+
+```{r}
+A <- matrix(1:4, nrow = 2)
+B <- matrix(5:8, nrow = 2)
+
+# Element-wise multiplication (probably not what you want for linear algebra)
+A * B
+
+# Matrix multiplication (what you usually want for linear algebra)
+A %*% B
+```
+
+## Mistake 2: Dimension Mismatch
+
+```{r}
+A <- matrix(1:6, nrow = 2, ncol = 3)
+B <- matrix(7:12, nrow = 2, ncol = 3)
+
+# This works (element-wise)
+A * B
+
+# This fails (matrix multiplication requires inner dimensions to match)
+# A %*% B  # Error: non-conformable arguments
+
+# Correct:
+C <- matrix(7:12, nrow = 3, ncol = 2)  # 3x2 matrix
+A %*% C  # 2x3 %*% 3x2 = 2x2 (works!)
+```
+
+## Mistake 3: Forgetting Column-Major Order
+
+```{r}
+# You might expect this to be:
+# [1,1]=1, [1,2]=2, [1,3]=3, [2,1]=4, etc.
+expected <- matrix(1:6, nrow = 2, ncol = 3, byrow = TRUE)
+
+# But without byrow, you get column-major:
+actual <- matrix(1:6, nrow = 2, ncol = 3)
+
+cat("With byrow=TRUE (like spreadsheet):\n")
+print(expected)
+cat("\nWithout byrow (column-major):\n")
+print(actual)
+```
+
+## Mistake 4: Off-by-One in Indexing
+
+```
+M <- matrix(1:9, nrow = 3)
+
+# Wrong (indexing starts at 1, not 0)
+# M[0, 1]  # Returns empty matrix, not row 1
+
+# Correct
+M[1, 1]  # First element
+
+# Wrong (trying to access beyond dimensions)
+# M[5, 3]  # Error: subscript out of bounds
+```
+
+# Summary Table
+
+| Operation | Syntax | Example | Purpose |
+|-----------|--------|---------|---------|
+| Create array | `array()` | `array(1:24, dim = c(3, 4, 2))` | Multi-dimensional array |
+| Create matrix | `matrix()` | `matrix(1:12, nrow = 3, ncol = 4)` | 2D array |
+| Set dimensions | `dim()` | `dim(z) <- c(3, 4, 2)` | Convert vector to array |
+| Access element | `[i, j]` | `A[2, 3]` | Single element |
+| Entire row | `[i, ]` | `A[2, ]` | All columns of row i |
+| Entire column | `[, j]` | `A[, 3]` | All rows of column j |
+| Submatrix | `[i:j, k:l]` | `A[1:3, 2:4]` | Range of rows and columns |
+| Exclude | `[-i, -j]` | `A[-1, -2]` | Remove rows/columns |
+| Index matrix | `matrix[c(...)]` | `X[index_matrix]` | Irregular extraction |
+| Element-wise mult | `*` | `A * B` | Multiply corresponding elements |
+| Matrix multiplication | `%*%` | `A %*% B` | Linear algebra multiplication |
+| Outer product | `%o%` | `x %o% y` | All combinations |
+| Transpose | `t()` | `t(A)` | Swap rows and columns |
+| Diagonal | `diag()` | `diag(A)` | Extract/set diagonal |
+| Solve equations | `solve()` | `solve(A, b)` | Solve Ax = b |
+| Inverse | `solve()` | `solve(A)` | Compute A⁻¹ |
+| Eigenvalues | `eigen()` | `eigen(A)` | Eigen decomposition |
+| Permute dimensions | `aperm()` | `aperm(A, c(2, 1))` | Rearrange dimensions |
+| Cross product | `crossprod()` | `crossprod(X, Y)` | Efficient X'Y |
+| Bind rows | `rbind()` | `rbind(M1, M2)` | Stack matrices vertically |
+| Bind columns | `cbind()` | `cbind(M1, M2)` | Join matrices horizontally |
+| Matrix to vector | `as.vector()` | `as.vector(M)` | Convert to vector (by column) |
+| Create list | `list()` | `list(1, "a", M)` | Heterogeneous collection |
+
+# Exercises
+
+## Exercise 1: Create and Explore a Matrix
+
+Create a 4x6 matrix filled with numbers 1 through 24 (row by row). Then:
+
+  - Extract the element at row 3, column 5
+
+  - Extract the entire 2nd row
+
+  - Extract the entire 4th column
+
+  - Extract a submatrix of rows 2-3 and columns 3-5
+
+```{r}
+# Your code here:
+```
+
+## Solution
+
+```{r}
+# Create matrix by row
+M <- matrix(1:24, nrow = 4, ncol = 6, byrow = TRUE)
+M
+
+# Extract element
+M[3, 5]  # Row 3, Column 5
+
+# Entire 2nd row
+M[2, ]
+
+# Entire 4th column
+M[, 4]
+
+# Submatrix rows 2-3, columns 3-5
+M[2:3, 3:5]
+```
+
+## Exercise 2: Matrix Operations
+
+Given the following matrices:
+
+```{r}
+A <- matrix(c(2, 1, 0, -1, 3, 2, 4, -2, 1), nrow = 3, byrow = TRUE)
+B <- matrix(c(1, 2, 1, 0, 1, -1, 3, 2, 0), nrow = 3, byrow = TRUE)
+```
+
+Calculate:
+
+  - A + B
+
+  - A %*% B
+
+  - The transpose of A
+
+  - The inverse of A (if it exists)
+
+  - The trace of A
+
+  - Row sums and column sums of A
+
+```{r}
+# Your code here:
+```
+
+## Solution 
+
+```{r}
+A <- matrix(c(2, 1, 0, -1, 3, 2, 4, -2, 1), nrow = 3, byrow = TRUE)
+B <- matrix(c(1, 2, 1, 0, 1, -1, 3, 2, 0), nrow = 3, byrow = TRUE)
+
+# A + B
+A + B
+
+# A %*% B
+A %*% B
+
+# Transpose of A
+t(A)
+
+# Inverse of A (check determinant first)
+det(A)  # Non-zero means invertible
+solve(A)
+
+# Trace of A
+sum(diag(A))
+
+# Row sums and column sums
+rowSums(A)
+colSums(A)
+```
+
+## Exercise 3: Solving Linear Equations
+
+Solve the following system of equations using **R**:
+text
+
+```
+2x + y + z = 7
+x - y + 2z = 4
+3x + 2y - z = 5
+```
+
+```{r}
+# Your code here:
+```
+
+## Solution 
+
+```{r}
+# Coefficient matrix
+A <- matrix(c(2, 1, 1,
+              1, -1, 2,
+              3, 2, -1), nrow = 3, byrow = TRUE)
+
+# Right-hand side
+b <- c(7, 4, 5)
+
+# Solve
+solve(A, b)  # x = 2, y = 1, z = 1
+```
+
+## Exercise 4: Working with a 3D Array
+
+Create a 3D array with dimensions $(4, 5, 3)$ containing random numbers between 0 and 100. Then:
+
+  - Calculate the mean of each layer (3rd dimension) using apply()
+
+  - Calculate the same means without apply() (hint: use colMeans or another approach)
+
+  - Find the maximum value in each row (across all columns and layers)
+
+  - Calculate the column sums for the second layer only
+  
+```{r}
+# Your code here:
+```
+
+## Solution 
+
+```{r}
+set.seed(123)
+arr <- array(runif(4*5*3, 0, 100), dim = c(4, 5, 3))
+
+# Mean of each layer using apply()
+apply(arr, 3, mean)
+
+# Mean of each layer without apply() - approach 1
+mean_layer1 <- mean(arr[, , 1])
+mean_layer2 <- mean(arr[, , 2])
+mean_layer3 <- mean(arr[, , 3])
+c(mean_layer1, mean_layer2, mean_layer3)
+
+# Mean of each layer without apply() - approach 2 using colMeans then rowMeans
+# First average across columns, then across rows within each layer
+sapply(1:3, function(i) mean(colMeans(arr[, , i])))
+
+# Maximum in each row (across all columns and layers)
+apply(arr, 1, max)
+
+# Column sums for the second layer only
+colSums(arr[, , 2])
+```
+
+## Exercise 5: Using `rbind()` and `cbind()`
+
+Create three vectors: `names = c("A", "B", "C", "D"), scores1 = c(85, 90, 78, 92), scores2 = c(88, 87, 81, 95)`. Then:
+
+  - Combine names and scores1 into a 4x2 matrix using `cbind()`
+
+  - Combine scores1 and scores2 into an 8x1 matrix using `rbind()`
+
+  - Add a new row with values `c("E", 89, 94)` to your first matrix
+
+  - Convert your combined matrix to a vector using `as.vector()`
+
+```{r}
+# Your code here:
+```
+
+## Solution
+
+```{r}
+# Create vectors
+names <- c("A", "B", "C", "D")
+scores1 <- c(85, 90, 78, 92)
+scores2 <- c(88, 87, 81, 95)
+
+# Combine names and scores1 into a matrix
+matrix1 <- cbind(names, scores1)
+matrix1
+
+# Combine scores1 and scores2 using rbind
+matrix2 <- rbind(scores1, scores2)
+matrix2
+
+# Add a new row to matrix1
+new_row <- c("E", 89, 94)
+matrix1 <- rbind(matrix1, new_row)
+matrix1
+
+# Convert to vector
+as.vector(matrix1)
+```
+
+## Exercise 6: Matrix Indexing Practice
+
+Create a 5x5 matrix with numbers 1 through 25 (row by row). Then extract:
+
+  - All values in column 3
+
+  - All rows except the first, but only columns 2 and 4
+
+  - The 2x2 submatrix at the bottom-right corner
+
+  - All values greater than 15 as a vector
+
+```{r}
+# Your code here:
+```
+
+## Solution
+
+```{r}
+# Create 5x5 matrix with numbers 1-25 (row by row)
+M <- matrix(1:25, nrow = 5, ncol = 5, byrow = TRUE)
+M
+
+# All values in column 3
+M[, 3]
+```
+
