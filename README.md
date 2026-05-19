@@ -37,7 +37,7 @@ It is designed to help students and self-learners build a strong foundation in *
 12. **Topic 12:** Data Manipulation and Tidying Data (dplyr & tidyr)
 13. **Topic 13:** Data Visualization with ggplot2
 14. **Topic 14:** Interactive Graphs
-15. **Topic 15:** Applications (Regression)
+15. **Topic 15:** Applications (Simple and Multiple Regression)
 
 ---
 
